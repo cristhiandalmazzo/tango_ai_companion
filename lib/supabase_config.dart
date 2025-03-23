@@ -1,0 +1,2 @@
+const String supabaseUrl = 'https://aabjcortlfrmexxdrqjw.supabase.co';
+const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhYmpjb3J0bGZybWV4eGRycWp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI3NTgzMjMsImV4cCI6MjA1ODMzNDMyM30.UK3axygMfcLkN8Y7oyS8T3EVRjztZbsMcOyz4sluDDQ';
