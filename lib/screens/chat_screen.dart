@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../openai_config.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -176,6 +176,7 @@ Greet them warmly, keep track of previous conversation context, and provide help
     required List<Map<String, String>> conversationHistory,
     required String userPrompt,
   }) async {
+    final openAIApiKey = dotenv.env['OPENAI_API_KEY'] ?? '';
     // Convert conversationHistory to the correct format.
     // (We already have role: user/assistant, content: ...).
     // We'll inject the system message first, then the existing conversation, then the new user message.
