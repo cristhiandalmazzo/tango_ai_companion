@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../widgets/custom_text_field.dart';
+import '../widgets/custom_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -40,44 +42,122 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 60),
+              _buildHeader(),
+              const SizedBox(height: 40),
+              _buildLoginForm(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        Container(
+          height: 80,
+          width: 80,
+          decoration: BoxDecoration(
+            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.favorite,
+            size: 40,
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          'Welcome to Tango',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Sign in to continue',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey.shade600,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoginForm() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        CustomTextField(
+          controller: _emailController,
+          label: 'Email',
+          hintText: 'Enter your email',
+          keyboardType: TextInputType.emailAddress,
+          prefixIcon: const Icon(Icons.email_outlined),
+        ),
+        const SizedBox(height: 16),
+        CustomTextField(
+          controller: _passwordController,
+          label: 'Password',
+          hintText: 'Enter your password',
+          obscureText: true,
+          prefixIcon: const Icon(Icons.lock_outline),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () {},
+            child: Text(
+              'Forgot Password?',
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        CustomButton(
+          text: 'Sign In',
+          onPressed: _signIn,
+          isLoading: _isLoading,
+          icon: Icons.login,
+        ),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+            Text(
+              "Don't have an account?",
+              style: TextStyle(color: Colors.grey.shade700),
             ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 16),
-            _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _signIn,
-                    child: const Text('Sign In'),
-                  ),
-            const SizedBox(height: 16),
-            // Link to navigate to the signup screen
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text("Don't have an account? "),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/signup');
-                  },
-                  child: const Text("Sign Up"),
+            TextButton(
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/signup');
+              },
+              child: Text(
+                "Sign Up",
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
+              ),
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 }

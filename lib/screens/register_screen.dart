@@ -4,10 +4,20 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'home_screen.dart';
 import 'package:uuid/uuid.dart';
+import '../widgets/custom_text_field.dart';
+import '../widgets/custom_button.dart';
 
 class SignUpScreen extends StatefulWidget {
   final String? relationshipId;
-  const SignUpScreen({super.key, this.relationshipId});
+  final ThemeMode currentThemeMode;
+  final Function(ThemeMode) onThemeChanged;
+  
+  const SignUpScreen({
+    super.key, 
+    this.relationshipId,
+    this.currentThemeMode = ThemeMode.light,
+    required this.onThemeChanged,
+  });
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -17,6 +27,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
+  bool _isLoading = false;
 
   // This variable holds the relationshipId extracted from the URL (if any)
   String? relationshipIdFromUrl;
@@ -57,6 +68,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   /// Handles sign up.
   Future<void> _signUp() async {
+    setState(() => _isLoading = true);
+
     final String email = _emailController.text.trim();
     final String password = _passwordController.text.trim();
     final String name = _nameController.text.trim();
@@ -130,7 +143,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text("Invite your partner"),
-            content: SelectableText(inviteUrl),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Share this link with your partner to join:"),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: SelectableText(
+                    inviteUrl,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
             actions: [
               TextButton(
                 onPressed: () {
@@ -154,7 +188,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => HomeScreen(
+            currentThemeMode: widget.currentThemeMode,
+            onThemeChanged: widget.onThemeChanged,
+          )),
         );
       }
     } on AuthException catch (e) {
@@ -178,42 +215,125 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $error")),
       );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign Up')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 40),
+              _buildHeader(),
+              const SizedBox(height: 40),
+              _buildRegisterForm(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        Container(
+          height: 80,
+          width: 80,
+          decoration: BoxDecoration(
+            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.person_add,
+            size: 40,
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          'Create an Account',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          relationshipIdFromUrl != null 
+              ? 'Join your partner\'s relationship'
+              : 'Get started with Tango',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey.shade600,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRegisterForm() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        CustomTextField(
+          controller: _nameController,
+          label: 'Full Name',
+          hintText: 'Enter your full name',
+          prefixIcon: const Icon(Icons.person_outline),
+        ),
+        const SizedBox(height: 16),
+        CustomTextField(
+          controller: _emailController,
+          label: 'Email',
+          hintText: 'Enter your email',
+          keyboardType: TextInputType.emailAddress,
+          prefixIcon: const Icon(Icons.email_outlined),
+        ),
+        const SizedBox(height: 16),
+        CustomTextField(
+          controller: _passwordController,
+          label: 'Password',
+          hintText: 'Create a password',
+          obscureText: true,
+          prefixIcon: const Icon(Icons.lock_outline),
+        ),
+        const SizedBox(height: 32),
+        CustomButton(
+          text: 'Sign Up',
+          onPressed: _signUp,
+          isLoading: _isLoading,
+          icon: Icons.arrow_forward,
+        ),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _signUp,
-              child: const Text('Sign Up'),
+            Text(
+              "Already have an account?",
+              style: TextStyle(color: Colors.grey.shade700),
             ),
             TextButton(
               onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
-              child: const Text("Already have an account? Log in"),
+              child: Text(
+                "Log in",
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 }

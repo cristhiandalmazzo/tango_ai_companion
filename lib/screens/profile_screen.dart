@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
-import '../widgets/app_drawer.dart';
+import '../widgets/screen_container.dart';
 import '../widgets/profile_form.dart';
 import '../services/profile_service.dart'; // For API calls if you decide to separate them.
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final ThemeMode currentThemeMode;
+  final Function(ThemeMode) onThemeChanged;
+  
+  const ProfileScreen({
+    super.key,
+    this.currentThemeMode = ThemeMode.light,
+    required this.onThemeChanged,
+  });
   
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
@@ -48,18 +55,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('My Profile')),
-      drawer: const AppDrawer(),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: ProfileForm(
-                initialData: _profileData,
-                onSave: _saveProfile,
-              ),
-            ),
+    return ScreenContainer(
+      title: 'My Profile',
+      isLoading: _isLoading,
+      currentThemeMode: widget.currentThemeMode,
+      onThemeChanged: widget.onThemeChanged,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: ProfileForm(
+          initialData: _profileData,
+          onSave: _saveProfile,
+        ),
+      ),
     );
   }
 }

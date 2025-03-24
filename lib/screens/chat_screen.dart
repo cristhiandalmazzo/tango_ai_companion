@@ -1,11 +1,20 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:relationship_mediator/widgets/app_drawer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../widgets/screen_container.dart';
+import '../widgets/chat_message_bubble.dart';
+import '../widgets/chat_input.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final ThemeMode currentThemeMode;
+  final Function(ThemeMode) onThemeChanged;
+  
+  const ChatScreen({
+    super.key,
+    this.currentThemeMode = ThemeMode.light,
+    required this.onThemeChanged,
+  });
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -87,7 +96,7 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() => _isLoading = false);
   }
 
-  /// Build the system prompt from the user’s profile data.
+  /// Build the system prompt from the user's profile data.
   /// We'll call this every time we do an AI request.
   String _buildSystemPrompt() {
     final interestsText = _userInterests.join(", ");
@@ -95,7 +104,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return """
 You are a helpful AI assistant. 
-The user’s name is $_userName.
+The user's name is $_userName.
 They have this bio: $_userBio
 They live in $_userLocation. 
 They were born on $_userBirthdate, identified as $_userGender.
@@ -207,10 +216,10 @@ Greet them warmly, keep track of previous conversation context, and provide help
       final data = jsonDecode(response.body);
       final String aiContent = data["choices"][0]["message"]["content"].trim();
       String cleanedText = aiContent
-          .replaceAll('’', "'")
-          .replaceAll('‘', "'")
-          .replaceAll('“', '"')
-          .replaceAll('”', '"');
+          .replaceAll(''', "'")
+          .replaceAll(''', "'")
+          .replaceAll('"', '"')
+          .replaceAll('"', '"');
       String normalizeText(String text) {
         // For example, remove or replace all non-ASCII characters:
         return text.replaceAll(RegExp(r'[^\x00-\x7F]+'), '');
@@ -224,83 +233,77 @@ Greet them warmly, keep track of previous conversation context, and provide help
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_userName.isEmpty ? "AI Chat" : "Chat with $_userName"),
-      ),
-      drawer: AppDrawer(),
-      body:
-          _isLoading && _messages.isEmpty
-              ? const Center(child: CircularProgressIndicator())
-              : Column(
-                children: [
-                  // The conversation
-                  Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(16.0),
-                      itemCount: _messages.length,
-                      itemBuilder: (context, index) {
-                        final role = _messages[index]['role']!;
-                        final text = _messages[index]['content'] ?? "";
-
-                        final isUser = (role == 'user');
-                        final alignment =
-                            isUser
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft;
-                        final color =
-                            isUser ? Colors.blue[100] : Colors.grey[300];
-
-                        return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 6.0),
-                          padding: const EdgeInsets.all(12.0),
-                          decoration: BoxDecoration(
-                            color: color,
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          alignment: alignment,
-                          child: Text(text),
-                        );
-                      },
-                    ),
-                  ),
-                  // Input field
-                  if (!_isLoading)
-                    Container(
-                      color: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8.0,
-                        vertical: 8.0,
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _controller,
-                              decoration: const InputDecoration(
-                                hintText: "Type your message...",
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.send),
-                            onPressed: () {
-                              final userText = _controller.text;
-                              _controller.clear();
-                              _sendMessage(userText);
-                            },
-                          ),
-                        ],
-                      ),
-                    )
-                  else
-                    // Indicate the AI is responding
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text("Thinking..."),
-                    ),
-                ],
+    return ScreenContainer(
+      title: _userName.isEmpty ? "AI Chat" : "Chat with $_userName",
+      centerTitle: false,
+      currentThemeMode: widget.currentThemeMode,
+      onThemeChanged: widget.onThemeChanged,
+      body: Column(
+        children: [
+          Expanded(
+            child: _isLoading && _messages.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : _buildChatMessages(),
+          ),
+          if (_isLoading && _messages.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 16, bottom: 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ChatMessageBubble(
+                  message: '',
+                  isUser: false,
+                  isTyping: true,
+                ),
               ),
+            ),
+          ChatInput(
+            controller: _controller,
+            onSend: _sendMessage,
+            isLoading: _isLoading,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatMessages() {
+    if (_messages.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.chat_bubble_outline,
+              size: 64,
+              color: Colors.grey.shade300,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Start your conversation',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: _messages.length,
+      itemBuilder: (context, index) {
+        final role = _messages[index]['role']!;
+        final text = _messages[index]['content'] ?? "";
+        final isUser = (role == 'user');
+
+        return ChatMessageBubble(
+          message: text,
+          isUser: isUser,
+        );
+      },
     );
   }
 }

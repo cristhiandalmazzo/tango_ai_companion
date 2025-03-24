@@ -8,10 +8,10 @@ import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
 import 'supabase_config.dart';
+import 'services/theme_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
 
   // For web: clean URL strategy (no hash)
   if (kIsWeb) {
@@ -26,19 +26,57 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  ThemeMode _themeMode = ThemeMode.light;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTheme();
+  }
+
+  Future<void> _loadTheme() async {
+    final themeMode = await ThemeService.getThemeMode();
+    setState(() {
+      _themeMode = themeMode;
+    });
+  }
+
+  void _changeTheme(ThemeMode mode) {
+    setState(() {
+      _themeMode = mode;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Tango',
+      theme: ThemeService.lightTheme,
+      darkTheme: ThemeService.darkTheme,
+      themeMode: _themeMode,
       routes: {
         '/login': (context) => const LoginScreen(),
-        '/home': (context) => const HomeScreen(),
-        '/profile': (context) => const ProfileScreen(),
-        '/ai_chat': (context) => const ChatScreen(),
+        '/home': (context) => HomeScreen(
+          currentThemeMode: _themeMode,
+          onThemeChanged: _changeTheme,
+        ),
+        '/profile': (context) => ProfileScreen(
+          currentThemeMode: _themeMode,
+          onThemeChanged: _changeTheme,
+        ),
+        '/ai_chat': (context) => ChatScreen(
+          currentThemeMode: _themeMode,
+          onThemeChanged: _changeTheme,
+        ),
       },
       // Use onGenerateRoute to handle dynamic routes.
       onGenerateRoute: (settings) {
@@ -56,7 +94,11 @@ class MyApp extends StatelessWidget {
             print("Extracted relationshipId: $relationshipId");
           }
           return MaterialPageRoute(
-            builder: (context) => SignUpScreen(relationshipId: relationshipId),
+            builder: (context) => SignUpScreen(
+              relationshipId: relationshipId,
+              currentThemeMode: _themeMode,
+              onThemeChanged: _changeTheme,
+            ),
           );
         }
         // Fallback to LoginScreen for unknown routes.
