@@ -23,10 +23,14 @@ jobs:
       - name: Build for Web
         run: flutter build web --dart-define=OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
 
+      - name: Set base href for GitHub Pages
+        run: |
+          BASE_HREF="/${{ github.repository }}"
+          sed -i "s|<base href=\"/\">|<base href=\"$BASE_HREF/\">|g" build/web/index.html
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.MY_GITHUB_PAT }}
           publish_dir: build/web
           target_branch: gh-pages
-      
