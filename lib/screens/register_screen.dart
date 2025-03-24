@@ -136,7 +136,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         await _updateUserProfileWithRelationship(userId, relationshipId);
 
         // Generate the invitation URL using the relationship id.
-        final String inviteUrl = "${kReleaseMode ? 'https://tangoapp.com' : 'http://localhost:49879'}/signup?relationshipId=$relationshipId";
+        final String inviteUrl = "${kReleaseMode ? 'https://cristhiandalmazzo.github.io/tango_ai_companion' : 'http://localhost:49879'}/signup?relationshipId=$relationshipId";
         
         // Show the invite URL dialog with a "Copy URL" button and a "Close" button.
         await showDialog(
