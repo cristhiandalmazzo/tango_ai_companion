@@ -34,6 +34,14 @@ class AppDrawer extends StatelessWidget {
               Navigator.pushReplacementNamed(context, '/profile');
             },
           ),
+          // AI chat navigation option.
+          ListTile(
+            leading: const Icon(Icons.chat),
+            title: const Text('AI Chat'),
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/ai_chat');
+            },
+          ),
           const Divider(),
           // Logout option.
           ListTile(

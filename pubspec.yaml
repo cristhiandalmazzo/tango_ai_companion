@@ -38,6 +38,7 @@ dependencies:
   uuid: ^3.0.0 
   flutter_web_plugins:
     sdk: flutter
+  http: ^0.13.5
 
 dev_dependencies:
   flutter_test:
