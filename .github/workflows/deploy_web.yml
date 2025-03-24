@@ -25,7 +25,9 @@ jobs:
 
       - name: Set base href for GitHub Pages
         run: |
-          BASE_HREF="/${{ github.repository }}"
+          # Extract only the repository name from github.repository
+          REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          BASE_HREF="/${REPO_NAME}"
           sed -i "s|<base href=\"/\">|<base href=\"$BASE_HREF/\">|g" build/web/index.html
 
       - name: Deploy to GitHub Pages
