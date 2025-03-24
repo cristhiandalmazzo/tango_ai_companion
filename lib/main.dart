@@ -1,10 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:relationship_mediator/screens/chat_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'screens/login_screen.dart';
-import 'screens/register_screen.dart'; // SignUpScreen is in register_screen.dart
+import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
 import 'supabase_config.dart';
@@ -12,18 +13,25 @@ import 'supabase_config.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Load the .env file (which holds your OPENAI_API_KEY)
+  await dotenv.load(fileName: ".env");
+
   // For web: clean URL strategy (no hash)
   if (kIsWeb) {
     setUrlStrategy(PathUrlStrategy());
   }
 
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+  if (kDebugMode) {
+    print("Supabase initialized successfully.");
+  }
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -51,7 +59,8 @@ class MyApp extends StatelessWidget {
             print("Extracted relationshipId: $relationshipId");
           }
           return MaterialPageRoute(
-              builder: (context) => SignUpScreen(relationshipId: relationshipId));
+            builder: (context) => SignUpScreen(relationshipId: relationshipId),
+          );
         }
         // Fallback to LoginScreen for unknown routes.
         return MaterialPageRoute(builder: (context) => const LoginScreen());

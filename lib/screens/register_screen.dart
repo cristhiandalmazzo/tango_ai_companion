@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'home_screen.dart';
+import 'package:uuid/uuid.dart';
 
 class SignUpScreen extends StatefulWidget {
   final String? relationshipId;
@@ -69,11 +70,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (user == null) return;
       final String userId = user.id;
 
+      final conversationId = const Uuid().v4();
+
       // Create the user's profile.
       await Supabase.instance.client.from('profiles').insert({
         'id': userId,
         'name': name,
         'email': email,
+        'conversation_id': conversationId,
       });
 
       if (kDebugMode) {
@@ -119,7 +123,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         await _updateUserProfileWithRelationship(userId, relationshipId);
 
         // Generate the invitation URL using the relationship id.
-        final String inviteUrl = "${kReleaseMode ? 'https://tangoapp.com' : 'http://localhost:49651'}/signup?relationshipId=$relationshipId";
+        final String inviteUrl = "${kReleaseMode ? 'https://tangoapp.com' : 'http://localhost:49879'}/signup?relationshipId=$relationshipId";
         
         // Show the invite URL dialog with a "Copy URL" button and a "Close" button.
         await showDialog(

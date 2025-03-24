@@ -1,12 +1,12 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:relationship_mediator/widgets/app_drawer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({Key? key}) : super(key: key);
+  const ChatScreen({super.key});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -177,6 +177,9 @@ Greet them warmly, keep track of previous conversation context, and provide help
     required String userPrompt,
   }) async {
     final openAIApiKey = dotenv.env['OPENAI_API_KEY'] ?? '';
+    if (openAIApiKey.isEmpty) {
+      debugPrint("OPENAI_API_KEY is empty!");
+    }
     // Convert conversationHistory to the correct format.
     // (We already have role: user/assistant, content: ...).
     // We'll inject the system message first, then the existing conversation, then the new user message.
@@ -226,6 +229,7 @@ Greet them warmly, keep track of previous conversation context, and provide help
       appBar: AppBar(
         title: Text(_userName.isEmpty ? "AI Chat" : "Chat with $_userName"),
       ),
+      drawer: AppDrawer(),
       body:
           _isLoading && _messages.isEmpty
               ? const Center(child: CircularProgressIndicator())
