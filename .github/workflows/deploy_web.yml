@@ -21,7 +21,7 @@ jobs:
         run: flutter pub get
 
       - name: Build for Web
-        run: flutter build web
+        run: flutter build web --dart-define=OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

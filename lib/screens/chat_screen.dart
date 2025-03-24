@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:relationship_mediator/widgets/app_drawer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -176,7 +175,7 @@ Greet them warmly, keep track of previous conversation context, and provide help
     required List<Map<String, String>> conversationHistory,
     required String userPrompt,
   }) async {
-    final openAIApiKey = dotenv.env['OPENAI_API_KEY'] ?? '';
+    const openAIApiKey = String.fromEnvironment('OPENAI_API_KEY', defaultValue: '');
     if (openAIApiKey.isEmpty) {
       debugPrint("OPENAI_API_KEY is empty!");
     }

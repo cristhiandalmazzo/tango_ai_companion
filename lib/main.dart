@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:relationship_mediator/screens/chat_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
@@ -13,8 +12,6 @@ import 'supabase_config.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load the .env file (which holds your OPENAI_API_KEY)
-  await dotenv.load(fileName: ".env");
 
   // For web: clean URL strategy (no hash)
   if (kIsWeb) {
