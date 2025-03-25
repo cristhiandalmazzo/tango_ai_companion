@@ -37,73 +37,7 @@ class TextProcessingService {
           .replaceAll('That\u2019s', "That's")
           // Fix specific encoding issues we've observed
           .replaceAll('ä', "'")   // Fix incorrect 'ä' that appears instead of apostrophes
-          .replaceAll('â', "'")   // Fix incorrect 'â' that appears instead of apostrophes
-          .replaceAll('ås', "'s") // Fix incorrect 'ås' pattern
-          .replaceAll('äs', "'s") // Fix incorrect 'äs' pattern
-          .replaceAll('âs', "'s") // Fix incorrect 'âs' pattern
-          .replaceAll('eä', "e'") // Fix common pattern
-          .replaceAll('eâ', "e'") // Fix common pattern
-          .replaceAll('äre', "'re") // Fix common pattern
-          .replaceAll('âre', "'re") // Fix common pattern
-          .replaceAll('äve', "'ve") // Fix common pattern
-          .replaceAll('âve', "'ve") // Fix common pattern
-          .replaceAll('äll', "'ll") // Fix common pattern
-          .replaceAll('âll', "'ll") // Fix common pattern
-          .replaceAll('äd', "'d") // Fix common pattern
-          .replaceAll('âd', "'d") // Fix common pattern
-          .replaceAll('ät', "'t") // Fix common pattern
-          .replaceAll('ât', "'t") // Fix common pattern
-          .replaceAll('än', "'n") // Fix common pattern
-          .replaceAll('ân', "'n") // Fix common pattern
-          // Fix specific contractions that are causing issues
-          .replaceAll('whatâ', "what'")
-          .replaceAll('whatä', "what'")
-          .replaceAll('thatâ', "that'")
-          .replaceAll('thatä', "that'")
-          .replaceAll('itâ', "it'")
-          .replaceAll('itä', "it'")
-          .replaceAll('thereâ', "there'")
-          .replaceAll('thereä', "there'")
-          .replaceAll('hereâ', "here'")
-          .replaceAll('hereä', "here'")
-          // Fix cases where 'ä' or 'â' appears instead of a space
-          .replaceAll('äwhether', ' whether')
-          .replaceAll('âwhether', ' whether')
-          .replaceAll('äjust', ' just')
-          .replaceAll('âjust', ' just')
-          .replaceAll('äand', ' and')
-          .replaceAll('âand', ' and')
-          .replaceAll('äor', ' or')
-          .replaceAll('âor', ' or')
-          .replaceAll('äbut', ' but')
-          .replaceAll('âbut', ' but')
-          .replaceAll('äso', ' so')
-          .replaceAll('âso', ' so')
-          .replaceAll('äthen', ' then')
-          .replaceAll('âthen', ' then')
-          .replaceAll('äthe', ' the')
-          .replaceAll('âthe', ' the')
-          .replaceAll('äin', ' in')
-          .replaceAll('âin', ' in')
-          .replaceAll('äon', ' on')
-          .replaceAll('âon', ' on')
-          .replaceAll('äat', ' at')
-          .replaceAll('âat', ' at')
-          .replaceAll('äfor', ' for')
-          .replaceAll('âfor', ' for')
-          .replaceAll('äwith', ' with')
-          .replaceAll('âwith', ' with')
-          .replaceAll('äby', ' by')
-          .replaceAll('âby', ' by')
-          .replaceAll('äabout', ' about')
-          .replaceAll('âabout', ' about')
-          .replaceAll('äif', ' if')
-          .replaceAll('âif', ' if')
-          .replaceAll('äof', ' of')
-          .replaceAll('âof', ' of')
-          .replaceAll('ähow', ' how')
-          .replaceAll('âhow', ' how')
-          .replaceAll('âd like', "'d like");
+          .replaceAll('â', "'");  // Fix incorrect 'â' that appears instead of apostrophes
       
       debugPrint('TextProcessingService: Applied character replacements, now fixing spacing issues');
       
@@ -157,7 +91,8 @@ class TextProcessingService {
           .replaceAll('ä', "'")  // Replace problematic character with apostrophe as fallback
           .replaceAll('â', "'")  // Replace problematic character with apostrophe as fallback
           .replaceAll('\u2019', "'") // Replace right single quotation mark
-          .replaceAll(RegExp(r'[^\x20-\x7E]'), '') // Remove non-ASCII
+          // Modified regex to preserve emojis and other useful Unicode characters
+          .replaceAll(RegExp(r'[\p{C}]', unicode: true), '') // Only remove control characters, keep emojis
           .replaceAll(RegExp(r'\s+'), ' ') // Normalize spaces
           .trim();
           
@@ -192,7 +127,10 @@ class TextProcessingService {
     } catch (e) {
       debugPrint('TextProcessingService: Error sanitizing text: $e');
       
-      final fallbackResult = text.replaceAll(RegExp(r'[^\x20-\x7E]'), '').trim();
+      final fallbackResult = text
+          // Modified regex to preserve emojis and other useful Unicode characters
+          .replaceAll(RegExp(r'[\p{C}]', unicode: true), '') // Only remove control characters, keep emojis
+          .trim();
       
       debugPrint('TextProcessingService: Fallback sanitization complete, returning text of length ${fallbackResult.length}');
       return fallbackResult;
@@ -215,19 +153,14 @@ class TextProcessingService {
     try {
       debugPrint('TextProcessingService: Applying text normalization rules while preserving markup');
       
-      // First, normalize all apostrophe sequences to a single standard apostrophe
+      // Normalize all apostrophe sequences to a single standard apostrophe
       var result = text;
-      
-      // Handle the U+0080 U+0099 sequence
       result = result.replaceAll('\u0080\u0099', "'");
-      
-      // Handle other special apostrophes
-      result = result
-          .replaceAll(''', "'")
-          .replaceAll(''', "'")
-          .replaceAll('\u2019', "'")
-          .replaceAll('ä', "'")
-          .replaceAll('â', "'");
+      result = result.replaceAll(''', "'");
+      result = result.replaceAll(''', "'");
+      result = result.replaceAll('\u2019', "'");
+      result = result.replaceAll('ä', "'");
+      result = result.replaceAll('â', "'");
       
       // Fix any double apostrophes that might have been created
       result = result.replaceAll("''", "'");
