@@ -16,13 +16,18 @@ class ChatInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get the current brightness to adapt to light/dark mode
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey.shade900 : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: isDarkMode 
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, -3),
           ),
@@ -35,17 +40,24 @@ class ChatInput extends StatelessWidget {
               controller: controller,
               decoration: InputDecoration(
                 hintText: hintText,
-                hintStyle: TextStyle(color: Colors.grey.shade400),
+                hintStyle: TextStyle(color: isDarkMode 
+                    ? Colors.grey.shade400 
+                    : Colors.grey.shade500),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Colors.grey.shade100,
+                fillColor: isDarkMode 
+                    ? Colors.grey.shade800 
+                    : Colors.grey.shade100,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 12,
                 ),
+              ),
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black87,
               ),
               minLines: 1,
               maxLines: 5,
