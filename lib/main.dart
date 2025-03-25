@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:relationship_mediator/screens/chat_screen.dart';
+import 'screens/chat_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -16,7 +16,6 @@ import 'screens/partner_profile_screen.dart';
 import 'screens/settings_screen.dart';
 import 'supabase_config.dart';
 import 'services/theme_service.dart';
-import 'services/text_processing_service.dart';
 import 'providers/language_provider.dart';
 import 'widgets/splash_screen.dart';
 
@@ -119,8 +118,6 @@ class _MyAppState extends State<MyApp> {
           seedColor: Colors.deepPurple,
           brightness: Brightness.dark,
           surface: const Color(0xFF2C2C2C), // Softer gray for surfaces
-          background: const Color(0xFF212121), // Softer gray for background
-          onBackground: Colors.white,
           onSurface: Colors.white,
         ),
         cardColor: const Color(0xFF2C2C2C), // Softer gray for cards
