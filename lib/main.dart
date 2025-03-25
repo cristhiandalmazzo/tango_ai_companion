@@ -110,10 +110,16 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
+        scaffoldBackgroundColor: const Color(0xFF212121), // Softer gray background
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
           brightness: Brightness.dark,
+          surface: const Color(0xFF2C2C2C), // Softer gray for surfaces
+          background: const Color(0xFF212121), // Softer gray for background
+          onBackground: Colors.white,
+          onSurface: Colors.white,
         ),
+        cardColor: const Color(0xFF2C2C2C), // Softer gray for cards
         // Ensure text has good contrast against dark backgrounds
         textTheme: const TextTheme(
           displayLarge: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),

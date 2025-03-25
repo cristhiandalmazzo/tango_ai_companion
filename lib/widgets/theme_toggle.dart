@@ -76,7 +76,7 @@ class _ThemeToggleState extends State<ThemeToggle> with SingleTickerProviderStat
           padding: const EdgeInsets.all(4.0),
           decoration: BoxDecoration(
             color: isDarkMode
-                ? Colors.grey.shade800
+                ? Colors.grey.shade700  // Lighter shade for dark mode
                 : Colors.grey.shade200,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [

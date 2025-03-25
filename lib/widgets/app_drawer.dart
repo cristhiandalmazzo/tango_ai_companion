@@ -21,7 +21,7 @@ class AppDrawer extends StatelessWidget {
     
     return Drawer(
       elevation: 2,
-      backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : null,
+      backgroundColor: isDarkMode ? const Color(0xFF2C2C2C) : null,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topRight: Radius.circular(16),

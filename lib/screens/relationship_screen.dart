@@ -202,7 +202,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: isDarkMode ? Colors.grey.shade800 : Colors.white,
+                      color: isDarkMode ? Colors.grey.shade700 : Colors.white,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -1269,7 +1269,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                   decoration: BoxDecoration(
                     color:
                         isDarkMode
-                            ? const Color(0xFF2A2A2A)
+                            ? const Color(0xFF3A3A3A)
                             : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -1336,7 +1336,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
           decoration: BoxDecoration(
             color:
                 isDarkMode
-                    ? const Color(0xFF2A2A2A)
+                    ? const Color(0xFF3A3A3A)
                     : Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [

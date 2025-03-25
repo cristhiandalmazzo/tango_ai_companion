@@ -136,9 +136,9 @@ class ThemeService {
   static ThemeData get darkTheme {
     return ThemeData(
       primaryColor: const Color(0xFF5E6BF8),
-      scaffoldBackgroundColor: const Color(0xFF121212),
+      scaffoldBackgroundColor: const Color(0xFF212121),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF1E1E1E),
+        backgroundColor: Color(0xFF2C2C2C),
         foregroundColor: Colors.white,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.white),
@@ -146,11 +146,14 @@ class ThemeService {
       colorScheme: ColorScheme.fromSeed(
         seedColor: const Color(0xFF5E6BF8),
         brightness: Brightness.dark,
+        surface: const Color(0xFF2C2C2C),
+        background: const Color(0xFF212121),
         onSurface: Colors.white,
         onPrimary: Colors.white,
+        onBackground: Colors.white,
       ),
       cardTheme: const CardTheme(
-        color: Color(0xFF1E1E1E),
+        color: Color(0xFF2C2C2C),
         elevation: 2,
         shadowColor: Colors.black45,
       ),
@@ -159,14 +162,14 @@ class ThemeService {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFF2A2A2A),
+        fillColor: const Color(0xFF3A3A3A),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade800),
+          borderSide: BorderSide(color: Colors.grey.shade700),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade800),
+          borderSide: BorderSide(color: Colors.grey.shade700),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
