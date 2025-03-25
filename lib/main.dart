@@ -84,11 +84,6 @@ class _MyAppState extends State<MyApp> {
           print("Processing route: ${settings.name}");
         }
 
-        // Default route: if no route specified, go to LoginScreen.
-        if (settings.name == '/') {
-          return MaterialPageRoute(builder: (context) => const LoginScreen());
-        }
-
         // Handle the signup route with relationshipId
         // Check for multiple possible URL patterns
         if (settings.name!.contains('signup')) {
@@ -131,6 +126,11 @@ class _MyAppState extends State<MyApp> {
               onThemeChanged: _changeTheme,
             ),
           );
+        }
+
+        // Default route: if no route specified, go to LoginScreen.
+        if (settings.name == '/') {
+          return MaterialPageRoute(builder: (context) => const LoginScreen());
         }
         
         // Fallback to LoginScreen for unknown routes.
