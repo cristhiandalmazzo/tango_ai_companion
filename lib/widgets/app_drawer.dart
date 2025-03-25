@@ -46,6 +46,12 @@ class AppDrawer extends StatelessWidget {
                 ),
                 _buildNavItem(
                   context: context,
+                  icon: Icons.favorite_border_outlined,
+                  title: 'Relationship',
+                  onTap: () => Navigator.pushReplacementNamed(context, '/relationship'),
+                ),
+                _buildNavItem(
+                  context: context,
                   icon: Icons.chat_outlined,
                   title: 'AI Chat',
                   onTap: () => Navigator.pushReplacementNamed(context, '/ai_chat'),
