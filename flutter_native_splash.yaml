@@ -1,0 +1,30 @@
+flutter_native_splash:
+  # Background color for the splash screen
+  color: "#673AB7"
+  
+  # You can also use a background image for the splash screen
+  # background_image: "assets/background.png"
+  
+  # This image will be centered on the splash screen
+  # Ideally use an SVG or provide images for different screen densities
+  image: assets/splash_logo.png
+  
+  # Splash screen will remain until the Flutter app draws its first frame
+  # If you wish to use something other than the default splash route, define a custom_splash_route
+  # keep_on_top_of_app: false
+  
+  # To avoid showing a loading indicator after the splash screen, set this to false
+  android_12:
+    # The image parameter sets the splash screen icon image
+    image: assets/splash_logo.png
+    color: "#673AB7"
+    icon_background_color: "#673AB7"
+    
+  # Disable the Android Splash Screen Fade Out animation
+  android: false
+  
+  # Disable the iOS alpha blending
+  ios: false
+  
+  # Enable the web splash screen
+  web: true 

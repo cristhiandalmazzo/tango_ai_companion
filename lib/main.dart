@@ -18,6 +18,7 @@ import 'supabase_config.dart';
 import 'services/theme_service.dart';
 import 'services/text_processing_service.dart';
 import 'providers/language_provider.dart';
+import 'widgets/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -115,18 +116,21 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       themeMode: _themeMode,
-      home: FutureBuilder(
-        future: _initializeApp(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
-          return const LoginScreen();
-        },
+      home: SplashScreen(
+        duration: const Duration(seconds: 2),
+        nextScreen: FutureBuilder(
+          future: _initializeApp(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+            return const LoginScreen();
+          },
+        ),
       ),
       routes: {
         '/login': (context) => const LoginScreen(),

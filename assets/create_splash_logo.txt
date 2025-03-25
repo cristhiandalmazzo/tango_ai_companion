@@ -1,0 +1,8 @@
+Please create a splash logo image named 'splash_logo.png' in this directory.
+The image should be at least 1152x1152 pixels and should be a PNG file with a transparent background.
+Consider using your app icon or logo as the splash image.
+
+After creating this image, run:
+flutter pub run flutter_native_splash:create
+
+For temporary testing, you can use a simple icon from your app (like the heart icon that's already used in the login screen) and create a PNG from it. 
