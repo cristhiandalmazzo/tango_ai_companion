@@ -40,37 +40,61 @@ class RelationshipService {
       
       // Get both partner IDs
       final String partnerAId = relationship['partner_a'];
-      final String partnerBId = relationship['partner_b'];
+      final dynamic partnerBId = relationship['partner_b']; // Use dynamic to handle null
+      bool isPartnerBSignedUp = false;
       
       // Determine which is the current user and which is the partner
       final String currentUserId = user.id;
-      String partnerId;
+      String? partnerId; // Make this nullable
       
       if (partnerAId == currentUserId) {
-        partnerId = partnerBId;
+        partnerId = partnerBId as String?; // Cast to nullable String
       } else {
         partnerId = partnerAId;
       }
       
-      // Fetch both partner profiles
+      // Fetch partner A profile (this should always exist)
       final partnerAProfile = await Supabase.instance.client
           .from('profiles')
           .select()
           .eq('id', partnerAId)
           .maybeSingle();
           
-      final partnerBProfile = await Supabase.instance.client
-          .from('profiles')
-          .select()
-          .eq('id', partnerBId)
-          .maybeSingle();
-          
-      if (partnerAProfile == null || partnerBProfile == null) {
-        debugPrint('RelationshipService: One or more partner profiles not found');
-        throw Exception("Partner profiles not found");
+      if (partnerAProfile == null) {
+        debugPrint('RelationshipService: Partner A profile not found');
+        throw Exception("Partner A profile not found");
       }
       
-      // Generate default metrics - don't query relationship_metrics table since it doesn't exist
+      // Create default partner B profile in case they haven't signed up
+      Map<String, dynamic> partnerBProfile = {
+        'id': null,
+        'name': 'Waiting for Partner',
+        'bio': 'Your partner has not signed up yet.',
+        'interests': [],
+        'personality_traits': []
+      };
+      
+      // Only fetch partner B profile if they have signed up
+      if (partnerBId != null && partnerBId.toString().isNotEmpty) {
+        debugPrint('RelationshipService: Partner B has signed up, fetching profile');
+        isPartnerBSignedUp = true;
+        
+        final fetchedPartnerBProfile = await Supabase.instance.client
+            .from('profiles')
+            .select()
+            .eq('id', partnerBId)
+            .maybeSingle();
+            
+        if (fetchedPartnerBProfile != null) {
+          partnerBProfile = fetchedPartnerBProfile;
+        } else {
+          debugPrint('RelationshipService: Partner B profile not found even though ID exists');
+        }
+      } else {
+        debugPrint('RelationshipService: Partner B has not signed up yet');
+      }
+      
+      // Generate default metrics
       final defaultMetrics = _generateDefaultMetrics(partnerAProfile, partnerBProfile);
       
       // Compile all data
@@ -80,6 +104,7 @@ class RelationshipService {
         'partner_a': partnerAProfile,
         'partner_b': partnerBProfile,
         'metrics': defaultMetrics,
+        'is_partner_b_signed_up': isPartnerBSignedUp
       };
     } catch (e) {
       debugPrint('RelationshipService: Error fetching relationship data: $e');

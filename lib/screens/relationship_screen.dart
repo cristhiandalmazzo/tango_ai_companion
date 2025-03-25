@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../widgets/screen_container.dart';
 import '../services/relationship_service.dart';
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kReleaseMode;
 
 class RelationshipScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
@@ -204,6 +206,21 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
             ],
           ),
           
+          // Re-invite partner button if partner hasn't signed up
+          if (!_isPartnerSignedUp()) ...[
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _showReInviteDialog,
+              icon: const Icon(Icons.person_add),
+              label: const Text('Re-invite Partner'),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+            ),
+          ],
+          
           const SizedBox(height: 40),
           
           // Relationship strength meter
@@ -312,7 +329,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
     }
     
     final String description = profile['bio'] ?? 
-        (isCurrentUser ? 'You' : 'Your partner') + ' has not added a description yet.';
+        'No description for ${isCurrentUser ? 'you' : 'your partner'} has been added yet.';
     
     // Use profile_picture_url if available, or generate a placeholder
     final String pictureUrl = profile['profile_picture_url'] ?? 
@@ -1031,5 +1048,77 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
         );
       });
     }
+  }
+
+  // Check if both partners have signed up
+  bool _isPartnerSignedUp() {
+    // Use the flag provided by the RelationshipService
+    if (_relationshipData.containsKey('is_partner_b_signed_up')) {
+      return _relationshipData['is_partner_b_signed_up'] ?? false;
+    }
+    
+    // Fallback to checking partner_b directly if the flag is not present
+    final partnerBId = _relationshipData['relationship']?['partner_b'];
+    return partnerBId != null && partnerBId.toString().isNotEmpty;
+  }
+  
+  // Show re-invite dialog
+  Future<void> _showReInviteDialog() async {
+    final relationshipId = _relationshipData['relationship']?['id'];
+    
+    if (relationshipId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Relationship ID not found.')),
+      );
+      return;
+    }
+    
+    // Generate the invitation URL using the relationship id
+    final String inviteUrl = "${kReleaseMode ? 'https://cristhiandalmazzo.github.io/tango_ai_companion' : 'http://localhost:49879'}/signup?relationshipId=$relationshipId";
+    
+    // Show the invite URL dialog
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Invite Your Partner"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Your partner hasn't signed up yet. Share this link with them to join:"),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SelectableText(
+                inviteUrl,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: inviteUrl));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Invitation URL copied to clipboard.")),
+              );
+            },
+            child: const Text("Copy URL"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("Close"),
+          )
+        ],
+      ),
+    );
   }
 } 
