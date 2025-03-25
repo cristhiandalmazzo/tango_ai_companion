@@ -59,12 +59,18 @@ class AppDrawer extends StatelessWidget {
                 const Divider(),
                 _buildNavItem(
                   context: context,
-                  icon: Icons.settings_outlined,
-                  title: 'Settings',
+                  icon: Icons.dark_mode,
+                  title: 'Dark Mode',
                   trailing: ThemeToggle(
                     currentThemeMode: currentThemeMode,
                     onThemeChanged: onThemeChanged,
                   ),
+                ),
+                _buildNavItem(
+                  context: context,
+                  icon: Icons.settings_outlined,
+                  title: 'Settings',
+                  onTap: () => Navigator.pushReplacementNamed(context, '/settings'),
                 ),
               ],
             ),

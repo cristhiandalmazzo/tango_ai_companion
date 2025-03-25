@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'profile_service.dart';
 import 'dart:math' as math;
+import 'package:uuid/uuid.dart';
 
 class RelationshipService {
   // Fetch relationship data including both partners
@@ -209,5 +210,59 @@ class RelationshipService {
       debugPrint('RelationshipService: Error updating relationship: $e');
       return false;
     }
+  }
+
+  /// Creates a new relationship for a user
+  static Future<String> createNewRelationship(String userId) async {
+    int maxRetries = 3;
+    int currentRetry = 0;
+    
+    while (currentRetry < maxRetries) {
+      final newRelationshipId = const Uuid().v4();
+      
+      try {
+        // Check if relationship already exists
+        final existingRelationship = await Supabase.instance.client
+            .from('relationships')
+            .select()
+            .eq('id', newRelationshipId)
+            .maybeSingle();
+            
+        if (existingRelationship != null) {
+          debugPrint('RelationshipService: Relationship ID $newRelationshipId already exists, retrying...');
+          currentRetry++;
+          continue;
+        }
+        
+        // Create new relationship
+        await Supabase.instance.client
+            .from('relationships')
+            .insert({
+              'id': newRelationshipId,
+              'partner_a': userId,
+              'partner_b': null,
+              'start_date': DateTime.now().toIso8601String(),
+              'status': 'active',
+              'active': true,
+              'additional_data': {
+                'notes': [],
+                'strength': 0,
+                'insights': [],
+              }
+            });
+        
+        debugPrint('RelationshipService: Created new relationship with ID: $newRelationshipId');
+        return newRelationshipId;
+      } catch (e) {
+        debugPrint('RelationshipService: Error creating relationship: $e');
+        currentRetry++;
+        
+        if (currentRetry >= maxRetries) {
+          throw Exception('Failed to create relationship after $maxRetries attempts');
+        }
+      }
+    }
+    
+    throw Exception('Failed to create relationship after $maxRetries attempts');
   }
 } 

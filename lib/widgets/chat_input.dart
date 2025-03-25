@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_container.dart';
 
 class ChatInput extends StatelessWidget {
   final TextEditingController controller;
@@ -20,7 +21,7 @@ class ChatInput extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.grey.shade900 : Colors.white,
         boxShadow: [
@@ -33,83 +34,85 @@ class ChatInput extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: hintText,
-                hintStyle: TextStyle(color: isDarkMode 
-                    ? Colors.grey.shade400 
-                    : Colors.grey.shade500),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
+      child: AppContainer(
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  hintText: hintText,
+                  hintStyle: TextStyle(color: isDarkMode 
+                      ? Colors.grey.shade400 
+                      : Colors.grey.shade500),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: isDarkMode 
+                      ? Colors.grey.shade800 
+                      : Colors.grey.shade100,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
-                filled: true,
-                fillColor: isDarkMode 
-                    ? Colors.grey.shade800 
-                    : Colors.grey.shade100,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
                 ),
+                minLines: 1,
+                maxLines: 5,
+                textCapitalization: TextCapitalization.sentences,
+                onSubmitted: isLoading ? null : (text) {
+                  if (text.trim().isNotEmpty) {
+                    onSend(text);
+                    controller.clear();
+                  }
+                },
               ),
-              style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black87,
-              ),
-              minLines: 1,
-              maxLines: 5,
-              textCapitalization: TextCapitalization.sentences,
-              onSubmitted: isLoading ? null : (text) {
-                if (text.trim().isNotEmpty) {
-                  onSend(text);
-                  controller.clear();
-                }
-              },
             ),
-          ),
-          const SizedBox(width: 8),
-          Material(
-            color: Theme.of(context).primaryColor,
-            borderRadius: BorderRadius.circular(24),
-            child: InkWell(
+            const SizedBox(width: 8),
+            Material(
+              color: Theme.of(context).primaryColor,
               borderRadius: BorderRadius.circular(24),
-              onTap: isLoading
-                  ? null
-                  : () {
-                      final text = controller.text;
-                      if (text.trim().isNotEmpty) {
-                        onSend(text);
-                        controller.clear();
-                      }
-                    },
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Center(
-                  child: isLoading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(24),
+                onTap: isLoading
+                    ? null
+                    : () {
+                        final text = controller.text;
+                        if (text.trim().isNotEmpty) {
+                          onSend(text);
+                          controller.clear();
+                        }
+                      },
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Center(
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Icon(
+                            Icons.send_rounded,
+                            color: Colors.white,
                           ),
-                        )
-                      : const Icon(
-                          Icons.send_rounded,
-                          color: Colors.white,
-                        ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../widgets/screen_container.dart';
 import '../widgets/chat_message_bubble.dart';
 import '../widgets/chat_input.dart';
+import '../widgets/app_container.dart';
 import '../services/edge_functions_service.dart';
 import '../services/profile_service.dart';
 import '../services/relationship_service.dart';
@@ -308,10 +309,35 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           }
         });
         
-        // If relationshipId is missing, use a default value
+        // If relationshipId is missing, create a new relationship
         if (_relationshipId == null) {
-          _relationshipId = 'self'; // Default value for personal chats
-          debugPrint('ChatScreen: Using default relationship_id: $_relationshipId');
+          debugPrint('ChatScreen: No relationship found, creating new one');
+          final newRelationshipId = const Uuid().v4();
+          
+          // Create a new relationship record
+          await Supabase.instance.client
+              .from('relationships')
+              .insert({
+                'id': newRelationshipId,
+                'partner_a': user.id,
+                'partner_b': null,
+                'start_date': DateTime.now().toIso8601String(),
+                'status': 'active',
+                'additional_data': {
+                  'notes': [],
+                  'strength': 0,
+                  'insights': [],
+                }
+              });
+          
+          // Update the profile with the new relationship_id
+          await Supabase.instance.client
+              .from('profiles')
+              .update({'relationship_id': newRelationshipId})
+              .eq('id', user.id);
+          
+          _relationshipId = newRelationshipId;
+          debugPrint('ChatScreen: Created new relationship with ID: $_relationshipId');
         }
         
         // Check if conversation_id is null and generate a new one if needed
@@ -333,8 +359,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           debugPrint('ChatScreen: Using existing conversation_id: $_conversationId');
         }
         
-        // Fetch partner profile if we're in a relationship
-        if (_relationshipId != null && _relationshipId != 'self') {
+        // Fetch partner profile if we have a relationship
+        if (_relationshipId != null) {
           debugPrint('ChatScreen: Fetching partner profile');
           await _fetchPartnerProfile();
         }
@@ -712,6 +738,12 @@ Tango: """;
       debugPrint("ChatScreen: Missing required fields for storing message: conversationId=$_conversationId, userId=$_userId, relationshipId=$_relationshipId");
       return;
     }
+
+    // Skip storing if relationship_id is 'self' or not a valid UUID
+    if (_relationshipId == 'self' || !_isValidUUID(_relationshipId!)) {
+      debugPrint('ChatScreen: Invalid relationship ID ($_relationshipId), skipping message storage');
+      return;
+    }
     
     try {
       final normalizedContent = TextProcessingService.normalizeTextPreserveMarkup(content);
@@ -736,6 +768,12 @@ Tango: """;
     debugPrint('ChatScreen: _storeAiMessage() called with content length: ${content.length}');
     if (_conversationId == null || _relationshipId == null) {
       debugPrint("ChatScreen: Missing required fields for storing AI message: conversationId=$_conversationId, relationshipId=$_relationshipId");
+      return;
+    }
+
+    // Skip storing if relationship_id is 'self' or not a valid UUID
+    if (_relationshipId == 'self' || !_isValidUUID(_relationshipId!)) {
+      debugPrint('ChatScreen: Invalid relationship ID ($_relationshipId), skipping message storage');
       return;
     }
     
@@ -832,6 +870,11 @@ Tango: """;
   Future<void> _fetchRelationshipData() async {
     debugPrint('ChatScreen: _fetchRelationshipData() called');
     
+    if (_relationshipId == null) {
+      debugPrint('ChatScreen: No relationship ID, skipping relationship data fetch');
+      return;
+    }
+    
     try {
       final data = await RelationshipService.fetchRelationshipData();
       
@@ -842,6 +885,20 @@ Tango: """;
       debugPrint('ChatScreen: Relationship data loaded');
     } catch (e) {
       debugPrint('ChatScreen: Error fetching relationship data: $e');
+    }
+  }
+
+  /// Helper method to check if a string is a valid UUID
+  bool _isValidUUID(String uuid) {
+    try {
+      // Check if the string matches the UUID format
+      final uuidPattern = RegExp(
+        r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+        caseSensitive: false,
+      );
+      return uuidPattern.hasMatch(uuid);
+    } catch (e) {
+      return false;
     }
   }
 
@@ -912,7 +969,7 @@ Tango: """;
 
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
       itemCount: _messages.length,
       physics: const AlwaysScrollableScrollPhysics(),
       itemBuilder: (context, index) {
@@ -921,9 +978,11 @@ Tango: """;
         final text = TextProcessingService.normalizeTextPreserveMarkup(rawText);
         final isUser = (role == 'user');
 
-        return ChatMessageBubble(
-          message: text,
-          isUser: isUser,
+        return AppContainer(
+          child: ChatMessageBubble(
+            message: text,
+            isUser: isUser,
+          ),
         );
       },
     );

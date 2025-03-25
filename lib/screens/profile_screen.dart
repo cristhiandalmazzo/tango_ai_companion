@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/screen_container.dart';
 import '../widgets/profile_form.dart';
+import '../widgets/app_container.dart';
 import '../services/profile_service.dart'; // For API calls if you decide to separate them.
 
 class ProfileScreen extends StatefulWidget {
@@ -84,37 +85,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
       currentThemeMode: widget.currentThemeMode,
       onThemeChanged: widget.onThemeChanged,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // View Profile button
-            Container(
-              margin: const EdgeInsets.only(bottom: 20),
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/profile');
-                },
-                icon: const Icon(Icons.visibility),
-                label: const Text('View Profile'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+        child: AppContainer(
+          additionalPadding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // View Profile button
+              Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/profile');
+                  },
+                  icon: const Icon(Icons.visibility),
+                  label: const Text('View Profile'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
               ),
-            ),
-            
-            // Profile form
-            _profileData.isEmpty && _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ProfileForm(
-                  initialData: _profileData,
-                  onSave: _saveProfile,
-                  isLoading: _isLoading,
-                ),
-          ],
+              
+              // Profile form
+              _profileData.isEmpty && _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ProfileForm(
+                    initialData: _profileData,
+                    onSave: _saveProfile,
+                    isLoading: _isLoading,
+                  ),
+            ],
+          ),
         ),
       ),
     );

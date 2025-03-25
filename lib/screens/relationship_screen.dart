@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/screen_container.dart';
+import '../widgets/app_container.dart';
 import '../services/relationship_service.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kReleaseMode;
@@ -130,182 +131,183 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const SizedBox(height: 20),
-          Text(
-            'Your Connection',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
+      child: AppContainer(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 20),
+            Text(
+              'Your Connection',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _relationshipData['relationship']?['name'] ?? 'View and strengthen your relationship',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).textTheme.bodySmall?.color,
+            const SizedBox(height: 8),
+            Text(
+              _relationshipData['relationship']?['name'] ?? 'View and strengthen your relationship',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Theme.of(context).textTheme.bodySmall?.color,
+              ),
             ),
-          ),
-          const SizedBox(height: 40),
-          
-          // Partner cards with connection
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              // Connection line
-              Positioned(
-                child: Container(
-                  height: 4,
-                  width: size.width * 0.4,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        _getColorFromInterests(_currentUserProfile['interests']),
-                        _getColorFromInterests(_partnerProfile['interests']),
+            const SizedBox(height: 40),
+            
+            // Partner cards with connection
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                // Connection line
+                Positioned(
+                  child: Container(
+                    height: 4,
+                    width: size.width * 0.4,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          _getColorFromInterests(_currentUserProfile['interests']),
+                          _getColorFromInterests(_partnerProfile['interests']),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                
+                // Connection heart icon
+                Positioned(
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isDarkMode ? Colors.grey.shade800 : Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(4),
+                    child: Icon(
+                      _getRelationshipIcon(),
+                      color: _getRelationshipIconColor(),
+                      size: 28,
+                    ),
                   ),
                 ),
-              ),
-              
-              // Connection heart icon
-              Positioned(
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: isDarkMode ? Colors.grey.shade800 : Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    _getRelationshipIcon(),
-                    color: _getRelationshipIconColor(),
-                    size: 28,
-                  ),
+                
+                // Partner cards
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildPartnerCard(_currentUserProfile, true),
+                    const SizedBox(width: 60), // Space for connection line and heart
+                    _buildPartnerCard(_partnerProfile, false),
+                  ],
                 ),
-              ),
-              
-              // Partner cards
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildPartnerCard(_currentUserProfile, true),
-                  const SizedBox(width: 60), // Space for connection line and heart
-                  _buildPartnerCard(_partnerProfile, false),
-                ],
+              ],
+            ),
+            
+            // Re-invite partner button if partner hasn't signed up
+            if (!_isPartnerSignedUp()) ...[
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _showReInviteDialog,
+                icon: const Icon(Icons.person_add),
+                label: const Text('Re-invite Partner'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                ),
               ),
             ],
-          ),
-          
-          // Re-invite partner button if partner hasn't signed up
-          if (!_isPartnerSignedUp()) ...[
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _showReInviteDialog,
-              icon: const Icon(Icons.person_add),
-              label: const Text('Re-invite Partner'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Theme.of(context).colorScheme.secondary,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            
+            const SizedBox(height: 40),
+            
+            // Relationship strength meter
+            _buildStrengthMeter(),
+            
+            const SizedBox(height: 30),
+            
+            // Anniversary date
+            _buildAnniversarySection(),
+            
+            const SizedBox(height: 30),
+            
+            // Relationship insights card
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-            ),
-          ],
-          
-          const SizedBox(height: 40),
-          
-          // Relationship strength meter
-          _buildStrengthMeter(),
-          
-          const SizedBox(height: 30),
-          
-          // Anniversary date
-          _buildAnniversarySection(),
-          
-          const SizedBox(height: 30),
-          
-          // Relationship insights card
-          Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.lightbulb_outline,
-                        color: Colors.amber,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Relationship Insights',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.lightbulb_outline,
+                          color: Colors.amber,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Relationship Insights',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _metrics['insight'] ?? 
+                      'Your communication has been improving. Continue sharing your thoughts and feelings to strengthen your connection.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildInsightMetric('Communication', 
+                            _metrics['communication'] ?? 70),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildInsightMetric('Understanding', 
+                            _metrics['understanding'] ?? 65),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/ai_chat');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    _metrics['insight'] ?? 
-                    'Your communication has been improving. Continue sharing your thoughts and feelings to strengthen your connection.',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildInsightMetric('Communication', 
-                          _metrics['communication'] ?? 70),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildInsightMetric('Understanding', 
-                          _metrics['understanding'] ?? 65),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/ai_chat');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      child: const Text('Strengthen With AI Chat'),
                     ),
-                    child: const Text('Strengthen With AI Chat'),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-          
-          const SizedBox(height: 20),
-          
-          // Notes section
-          _buildNotesSection(),
-          
-          const SizedBox(height: 20),
-          
-          // Common interests section
-          if (_getCommonInterests().isNotEmpty) _buildCommonInterestsSection(),
-        ],
+            
+            const SizedBox(height: 20),
+            
+            // Notes section
+            _buildNotesSection(),
+            
+            const SizedBox(height: 20),
+            
+            // Common interests section
+            if (_getCommonInterests().isNotEmpty) _buildCommonInterestsSection(),
+          ],
+        ),
       ),
     );
   }
