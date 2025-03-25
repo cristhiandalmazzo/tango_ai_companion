@@ -85,7 +85,7 @@ class _MyAppState extends State<MyApp> {
           return MaterialPageRoute(builder: (context) => const LoginScreen());
         }
         // Handle the signup route with relationshipId
-        if (settings.name!.startsWith('/signup')) {
+        if (settings.name!.startsWith('/signup') || settings.name!.endsWith('/signup')) {
           // Parse the URL to extract the relationshipId query parameter.
           final uri = Uri.parse(settings.name!);
           final relationshipId = uri.queryParameters['relationshipId'];
