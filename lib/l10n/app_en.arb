@@ -36,11 +36,11 @@
   "@forgotPassword": {
     "description": "Forgot password link text"
   },
-  "dontHaveAccount": "Don't have an account? Register",
+  "dontHaveAccount": "Don't have an account?",
   "@dontHaveAccount": {
     "description": "Text for redirecting to registration"
   },
-  "haveAccount": "Already have an account? Login",
+  "haveAccount": "Already have an account?",
   "@haveAccount": {
     "description": "Text for redirecting to login"
   },
