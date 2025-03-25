@@ -57,7 +57,7 @@
   "confirmExitRelationship": "Tem certeza que deseja sair deste relacionamento? Esta ação não pode ser desfeita.",
   "enterFullName": "Digite seu nome completo",
   "enterEmail": "Digite seu e-mail",
-  "createPassword": "Crie uma senha",
+  "createPassword": "Digite a senha",
   "profileUpdated": "Perfil atualizado com sucesso.",
   "failedToLoad": "Falha ao carregar o perfil: ",
   "failedToUpdate": "Falha ao atualizar o perfil: ",

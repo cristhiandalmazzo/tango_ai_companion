@@ -40,19 +40,20 @@ class CustomButton extends StatelessWidget {
               onPressed: isLoading ? null : onPressed,
               style: OutlinedButton.styleFrom(
                 padding: padding,
-                side: BorderSide(color: theme.primaryColor),
+                side: BorderSide(color: theme.colorScheme.primary),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(borderRadius),
                 ),
+                foregroundColor: theme.colorScheme.primary,
               ),
-              child: _buildButtonContent(context),
+              child: _buildButtonContent(context, isOutlined: true),
             )
           : ElevatedButton(
               onPressed: isLoading ? null : onPressed,
               style: ElevatedButton.styleFrom(
                 padding: padding,
-                backgroundColor: backgroundColor ?? theme.primaryColor,
-                foregroundColor: textColor ?? Colors.white,
+                backgroundColor: backgroundColor ?? theme.colorScheme.primary,
+                foregroundColor: textColor ?? theme.colorScheme.onPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(borderRadius),
                 ),
@@ -63,14 +64,18 @@ class CustomButton extends StatelessWidget {
     );
   }
 
-  Widget _buildButtonContent(BuildContext context) {
+  Widget _buildButtonContent(BuildContext context, {bool isOutlined = false}) {
+    final theme = Theme.of(context);
+
     return isLoading
-        ? const SizedBox(
+        ? SizedBox(
             width: 24,
             height: 24,
             child: CircularProgressIndicator(
               strokeWidth: 2.5,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                isOutlined ? theme.colorScheme.primary : theme.colorScheme.onPrimary
+              ),
             ),
           )
         : Row(

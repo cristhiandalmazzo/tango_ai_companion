@@ -228,9 +228,9 @@
   "@enterEmail": {
     "description": "Placeholder for email input field"
   },
-  "createPassword": "Create a password",
+  "createPassword": "Enter password",
   "@createPassword": {
-    "description": "Placeholder for password creation field"
+    "description": "Placeholder for password input field"
   },
   "profileUpdated": "Profile updated successfully.",
   "@profileUpdated": {

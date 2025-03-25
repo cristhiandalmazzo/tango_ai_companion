@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
+import '../services/profile_service.dart';
 import 'theme_toggle.dart';
 
-class AppDrawer extends StatelessWidget {
+class AppDrawer extends StatefulWidget {
   final ThemeMode currentThemeMode;
   final Function(ThemeMode) onThemeChanged;
 
@@ -14,6 +15,41 @@ class AppDrawer extends StatelessWidget {
   });
 
   @override
+  State<AppDrawer> createState() => _AppDrawerState();
+}
+
+class _AppDrawerState extends State<AppDrawer> {
+  Map<String, dynamic>? _userProfile;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final profile = await ProfileService.fetchProfile();
+      if (mounted) {
+        setState(() {
+          _userProfile = profile;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading profile: $e');
+      }
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final currentUser = Supabase.instance.client.auth.currentUser;
     final theme = Theme.of(context);
@@ -21,7 +57,9 @@ class AppDrawer extends StatelessWidget {
     
     return Drawer(
       elevation: 2,
-      backgroundColor: isDarkMode ? const Color(0xFF2C2C2C) : null,
+      backgroundColor: isDarkMode 
+          ? Color.lerp(const Color(0xFF2C2C2C), theme.colorScheme.primary, 0.05)
+          : theme.colorScheme.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topRight: Radius.circular(16),
@@ -66,16 +104,16 @@ class AppDrawer extends StatelessWidget {
                   title: 'Dark Mode',
                   trailing: Builder(
                     builder: (context) {
-                      debugPrint('AppDrawer: Building ThemeToggle with currentThemeMode: $currentThemeMode');
+                      debugPrint('AppDrawer: Building ThemeToggle with currentThemeMode: ${widget.currentThemeMode}');
                       return ThemeToggle(
                         key: const ValueKey('theme_toggle'),
-                        currentThemeMode: currentThemeMode,
+                        currentThemeMode: widget.currentThemeMode,
                         onThemeChanged: (mode) {
                           debugPrint('AppDrawer: ThemeToggle callback called with mode: $mode');
                           // Ensure we're setting to a definite state
                           final newMode = (mode == ThemeMode.dark) ? ThemeMode.dark : ThemeMode.light;
                           debugPrint('AppDrawer: Enforcing definite theme state: $newMode');
-                          onThemeChanged(newMode);
+                          widget.onThemeChanged(newMode);
                           debugPrint('AppDrawer: Called parent onThemeChanged');
                         },
                       );
@@ -98,12 +136,16 @@ class AppDrawer extends StatelessWidget {
   }
 
   Widget _buildDrawerHeader(BuildContext context, User? user) {
+    final theme = Theme.of(context);
+    final String? profilePictureUrl = _userProfile?['profile_picture_url'];
+    final String displayName = _userProfile?['name'] ?? user?.email?.split('@').first ?? 'Welcome';
+    
     return DrawerHeader(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Theme.of(context).primaryColor,
-            Theme.of(context).primaryColor.withOpacity(0.7),
+            theme.colorScheme.primary,
+            theme.colorScheme.primary.withOpacity(0.7),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -112,30 +154,63 @@ class AppDrawer extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.white24,
-            child: Icon(
-              Icons.person,
-              size: 30,
-              color: Colors.white,
-            ),
+          GestureDetector(
+            onTap: () => Navigator.pushReplacementNamed(context, '/profile'),
+            child: _isLoading 
+                ? CircleAvatar(
+                    radius: 30,
+                    backgroundColor: theme.colorScheme.onPrimary.withOpacity(0.25),
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: theme.colorScheme.onPrimary,
+                      ),
+                    ),
+                  )
+                : profilePictureUrl != null && profilePictureUrl.isNotEmpty
+                    ? CircleAvatar(
+                        radius: 30,
+                        backgroundColor: theme.colorScheme.onPrimary.withOpacity(0.25),
+                        backgroundImage: NetworkImage(profilePictureUrl),
+                        onBackgroundImageError: (_, __) {
+                          // Handle image loading error
+                        },
+                      )
+                    : CircleAvatar(
+                        radius: 30,
+                        backgroundColor: theme.colorScheme.onPrimary.withOpacity(0.25),
+                        child: Icon(
+                          Icons.person,
+                          size: 30,
+                          color: theme.colorScheme.onPrimary,
+                        ),
+                      ),
           ),
           const SizedBox(height: 12),
-          Text(
-            user?.email?.split('@').first ?? 'Welcome',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            user?.email ?? '',
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
+          GestureDetector(
+            onTap: () => Navigator.pushReplacementNamed(context, '/profile'),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  displayName,
+                  style: TextStyle(
+                    color: theme.colorScheme.onPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  user?.email ?? '',
+                  style: TextStyle(
+                    color: theme.colorScheme.onPrimary.withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -150,19 +225,22 @@ class AppDrawer extends StatelessWidget {
     VoidCallback? onTap,
     Widget? trailing,
   }) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
     
     return ListTile(
       leading: Icon(
         icon,
-        color: isDarkMode ? Colors.white : Theme.of(context).primaryColor,
+        color: theme.colorScheme.primary,
       ),
       title: Text(
         title,
         style: TextStyle(
           fontWeight: FontWeight.w500,
           fontSize: 16,
-          color: isDarkMode ? Colors.white : null,
+          color: isDarkMode 
+              ? theme.colorScheme.primary.withOpacity(0.9)
+              : theme.colorScheme.primary.withOpacity(0.9),
         ),
       ),
       trailing: trailing,
@@ -175,6 +253,8 @@ class AppDrawer extends StatelessWidget {
   }
 
   Widget _buildLogoutButton(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Container(
       padding: const EdgeInsets.all(20),
       child: ElevatedButton.icon(
@@ -188,8 +268,8 @@ class AppDrawer extends StatelessWidget {
         icon: const Icon(Icons.logout),
         label: const Text('Logout'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.redAccent,
-          foregroundColor: Colors.white,
+          backgroundColor: theme.colorScheme.error,
+          foregroundColor: theme.colorScheme.onError,
           padding: const EdgeInsets.symmetric(
             vertical: 12,
             horizontal: 16,

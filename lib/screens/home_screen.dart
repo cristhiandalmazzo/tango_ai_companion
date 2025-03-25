@@ -93,7 +93,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildRelationshipSection(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,13 +104,15 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: isDarkMode ? Colors.white : Colors.black87,
+            color: theme.colorScheme.primary,
           ),
         ),
         const SizedBox(height: 16),
         Card(
           elevation: 2,
-          color: isDarkMode ? const Color(0xFF2A2A2A) : null,
+          color: isDarkMode 
+            ? Color.lerp(const Color(0xFF2A2A2A), theme.colorScheme.primary, 0.05)
+            : theme.cardColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -123,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   avatarSize: 60.0,
                   centerWidget: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: theme.colorScheme.surface,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -136,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: const EdgeInsets.all(6),
                     child: Icon(
                       Icons.favorite,
-                      color: Colors.red.shade400,
+                      color: theme.colorScheme.primary,
                       size: 16,
                     ),
                   ),
@@ -144,8 +147,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 16),
                 Text(
                   _relationshipData['relationship']?['name'] ?? l10n.viewAndStrengthen,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -156,6 +160,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   icon: Icons.favorite_border,
                   isOutlined: true,
+                  backgroundColor: Colors.transparent,
+                  textColor: theme.colorScheme.primary,
                   width: double.infinity,
                 ),
               ],
@@ -168,7 +174,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildWelcomeCard(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
     
     return Container(
       width: double.infinity,
@@ -176,8 +183,8 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Theme.of(context).primaryColor,
-            Theme.of(context).primaryColor.withOpacity(0.7),
+            theme.colorScheme.primary,
+            theme.colorScheme.primary.withOpacity(0.7),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -185,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).primaryColor.withOpacity(0.3),
+            color: theme.colorScheme.primary.withOpacity(0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -196,8 +203,8 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Text(
             l10n.welcome,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: theme.colorScheme.onPrimary,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
@@ -205,8 +212,8 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 8),
           Text(
             l10n.aiCompanion,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: theme.colorScheme.onPrimary.withOpacity(0.9),
               fontSize: 16,
             ),
           ),
@@ -217,8 +224,8 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.pushNamed(context, '/ai_chat');
             },
             icon: Icons.chat_bubble_outline,
-            backgroundColor: Colors.white,
-            textColor: Theme.of(context).primaryColor,
+            backgroundColor: theme.colorScheme.surface,
+            textColor: theme.colorScheme.primary,
           ),
         ],
       ),
@@ -227,7 +234,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildFeatureSection(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
     
     final features = [
       {
@@ -252,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: isDarkMode ? Colors.white : Colors.black87,
+            color: theme.colorScheme.primary,
           ),
         ),
         const SizedBox(height: 16),
@@ -265,7 +273,9 @@ class _HomeScreenState extends State<HomeScreen> {
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
               elevation: 2,
-              color: isDarkMode ? const Color(0xFF2A2A2A) : null,
+              color: isDarkMode 
+                ? Color.lerp(const Color(0xFF2A2A2A), theme.colorScheme.primary, 0.05)
+                : theme.cardColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -275,19 +285,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   vertical: 8,
                 ),
                 leading: CircleAvatar(
-                  backgroundColor: isDarkMode 
-                      ? Theme.of(context).primaryColor.withOpacity(0.3)
-                      : Theme.of(context).primaryColor.withOpacity(0.1),
+                  backgroundColor: theme.colorScheme.primary.withOpacity(0.2),
                   child: Icon(
                     feature['icon'] as IconData,
-                    color: Theme.of(context).primaryColor,
+                    color: theme.colorScheme.primary,
                   ),
                 ),
                 title: Text(
                   feature['title'] as String,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black87,
+                    color: theme.colorScheme.primary,
                   ),
                 ),
                 subtitle: Text(
@@ -299,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 trailing: Icon(
                   Icons.arrow_forward_ios, 
                   size: 16,
-                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                  color: theme.colorScheme.primary,
                 ),
                 onTap: () {
                   Navigator.pushNamed(context, feature['route'] as String);

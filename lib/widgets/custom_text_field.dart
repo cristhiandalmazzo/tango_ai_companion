@@ -36,7 +36,8 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
     
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -58,26 +59,19 @@ class CustomTextField extends StatelessWidget {
           labelText: label,
           hintText: hintText,
           labelStyle: TextStyle(
-            color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+            color: controller.text.isNotEmpty ? theme.colorScheme.primary : (isDarkMode ? Colors.grey[300] : Colors.grey[700]),
           ),
           hintStyle: TextStyle(
             color: isDarkMode ? Colors.grey[400] : Colors.grey[500],
           ),
           prefixIcon: prefixIcon != null 
-            ? IconTheme(
-                data: IconThemeData(
-                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                ),
-                child: prefixIcon!,
-              ) 
+            ? prefixIcon 
             : null,
           suffixIcon: suffixIcon,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(
-              color: isDarkMode 
-                ? Colors.grey[500]! 
-                : Theme.of(context).primaryColor,
+              color: theme.colorScheme.primary,
             ),
           ),
           enabledBorder: OutlineInputBorder(
@@ -89,12 +83,12 @@ class CustomTextField extends StatelessWidget {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(
-              color: Theme.of(context).primaryColor, 
+              color: theme.colorScheme.primary, 
               width: 2,
             ),
           ),
           filled: true,
-          fillColor: isDarkMode ? const Color(0xFF2A2A2A) : Colors.grey.shade50,
+          fillColor: isDarkMode ? Color.lerp(const Color(0xFF2A2A2A), theme.colorScheme.primary, 0.03) : Colors.grey.shade50,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       ),

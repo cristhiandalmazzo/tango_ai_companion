@@ -233,7 +233,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    
     return Scaffold(
+      backgroundColor: isDarkMode 
+          ? Color.lerp(const Color(0xFF121212), theme.colorScheme.primary, 0.03)
+          : theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: AppContainer(
@@ -244,7 +250,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   alignment: Alignment.topRight,
                   child: Padding(
                     padding: const EdgeInsets.only(top: 16),
-                    child: LanguageSelector(isCompact: true),
+                    child: LanguageSelector(isCompact: false),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -261,6 +267,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget _buildHeader() {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
     
     return Column(
       children: [
@@ -268,21 +276,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
           height: 80,
           width: 80,
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            color: theme.colorScheme.primary.withOpacity(0.2),
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.person_add,
             size: 40,
-            color: Theme.of(context).primaryColor,
+            color: theme.colorScheme.primary,
           ),
         ),
         const SizedBox(height: 16),
         Text(
           l10n.register,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
+            color: theme.colorScheme.primary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -293,7 +302,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               : l10n.welcome,
           style: TextStyle(
             fontSize: 16,
-            color: Colors.grey.shade600,
+            color: isDarkMode ? Colors.white70 : Colors.grey.shade600,
           ),
           textAlign: TextAlign.center,
         ),
@@ -303,6 +312,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget _buildRegisterForm() {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -311,7 +321,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           controller: _nameController,
           label: l10n.name,
           hintText: l10n.enterFullName,
-          prefixIcon: const Icon(Icons.person_outline),
+          prefixIcon: Icon(Icons.person_outline, color: theme.colorScheme.primary),
         ),
         const SizedBox(height: 16),
         CustomTextField(
@@ -319,7 +329,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           label: l10n.email,
           hintText: l10n.enterEmail,
           keyboardType: TextInputType.emailAddress,
-          prefixIcon: const Icon(Icons.email_outlined),
+          prefixIcon: Icon(Icons.email_outlined, color: theme.colorScheme.primary),
         ),
         const SizedBox(height: 16),
         CustomTextField(
@@ -327,7 +337,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           label: l10n.password,
           hintText: l10n.createPassword,
           obscureText: true,
-          prefixIcon: const Icon(Icons.lock_outline),
+          prefixIcon: Icon(Icons.lock_outline, color: theme.colorScheme.primary),
         ),
         const SizedBox(height: 32),
         CustomButton(
@@ -335,6 +345,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           onPressed: _signUp,
           isLoading: _isLoading,
           icon: Icons.arrow_forward,
+          backgroundColor: theme.colorScheme.primary,
+          textColor: theme.colorScheme.onPrimary,
         ),
         const SizedBox(height: 24),
         Row(
@@ -343,8 +355,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
             Text(
               l10n.haveAccount,
               style: TextStyle(
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? Colors.grey.shade300 
+                color: theme.brightness == Brightness.dark 
+                    ? Colors.white70
                     : Colors.grey.shade700
               ),
             ),
@@ -353,7 +365,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               child: Text(
                 l10n.login,
                 style: TextStyle(
-                  color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Theme.of(context).primaryColor,
+                  color: theme.colorScheme.primary,
                   fontWeight: FontWeight.bold,
                 ),
               ),

@@ -136,10 +136,13 @@ class _UserProfileViewScreenState extends State<UserProfileViewScreen> {
           icon: const Icon(Icons.edit),
           label: const Text('Edit Profile'),
           style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
+            elevation: 2,
           ),
         ),
         
@@ -260,6 +263,9 @@ class _UserProfileViewScreenState extends State<UserProfileViewScreen> {
           name,
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.bold,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Theme.of(context).colorScheme.primary 
+                : Theme.of(context).colorScheme.primary.withOpacity(0.9),
           ),
         ),
         if (ageText != null)
@@ -268,7 +274,9 @@ class _UserProfileViewScreenState extends State<UserProfileViewScreen> {
             child: Text(
               ageText,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).textTheme.bodyMedium?.color,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white70
+                    : Colors.black54,
               ),
             ),
           ),
@@ -296,6 +304,9 @@ class _UserProfileViewScreenState extends State<UserProfileViewScreen> {
     required IconData icon,
     Color? chipColor,
   }) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Card(
@@ -303,6 +314,9 @@ class _UserProfileViewScreenState extends State<UserProfileViewScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
+        color: isDarkMode 
+            ? theme.cardColor 
+            : theme.cardColor.withOpacity(0.95),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -312,14 +326,17 @@ class _UserProfileViewScreenState extends State<UserProfileViewScreen> {
                 children: [
                   Icon(
                     icon,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: theme.colorScheme.primary,
                     size: 20,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
+                      color: isDarkMode 
+                          ? theme.colorScheme.primary 
+                          : theme.colorScheme.primary.withOpacity(0.8),
                     ),
                   ),
                 ],
@@ -329,8 +346,16 @@ class _UserProfileViewScreenState extends State<UserProfileViewScreen> {
                 spacing: 8,
                 runSpacing: 8,
                 children: items.map((item) => Chip(
-                  label: Text(item),
-                  backgroundColor: chipColor,
+                  label: Text(
+                    item,
+                    style: TextStyle(
+                      color: isDarkMode 
+                          ? Colors.white 
+                          : theme.colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  backgroundColor: chipColor ?? theme.colorScheme.primaryContainer,
                 )).toList(),
               ),
             ],

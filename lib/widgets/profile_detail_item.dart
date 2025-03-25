@@ -28,7 +28,7 @@ class ProfileDetailItem extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: theme.primaryColor,
+            color: theme.colorScheme.primary,
             size: 24,
           ),
           const SizedBox(width: 16),
@@ -40,13 +40,17 @@ class ProfileDetailItem extends StatelessWidget {
                   title,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                    color: isDarkMode 
+                        ? theme.colorScheme.primary 
+                        : theme.colorScheme.primary.withOpacity(0.8),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   value,
-                  style: theme.textTheme.bodyLarge,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                  ),
                   maxLines: maxLines,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -64,6 +68,9 @@ class ProfileDetailItem extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
+        color: isDarkMode 
+            ? theme.cardColor 
+            : theme.cardColor.withOpacity(0.95),
         child: content,
       );
     }
