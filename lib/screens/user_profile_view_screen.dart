@@ -310,6 +310,7 @@ class _UserProfileViewScreenState extends State<UserProfileViewScreen> {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : Theme.of(context).textTheme.bodySmall?.color,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

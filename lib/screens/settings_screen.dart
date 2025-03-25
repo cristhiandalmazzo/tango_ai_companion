@@ -277,10 +277,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildLanguageSelector(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final l10n = AppLocalizations.of(context)!;
-    
     return ListTile(
-      leading: const Icon(Icons.language),
-      title: Text(l10n.language),
+      leading: Icon(Icons.language, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : null),
+      title: Text(l10n.language, style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : null)),
       trailing: DropdownButton<Locale>(
         value: languageProvider.locale,
         underline: const SizedBox(),
@@ -299,6 +298,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Text('Português (Brasil)'),
           ),
         ],
+        style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : null),
       ),
     );
   }

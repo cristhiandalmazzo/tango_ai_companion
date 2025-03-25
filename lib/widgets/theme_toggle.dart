@@ -94,13 +94,13 @@ class _ThemeToggleState extends State<ThemeToggle> with SingleTickerProviderStat
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: isDarkMode ? Colors.yellow : Colors.blueGrey,
+                      color: isDarkMode ? Colors.yellow.shade300 : Colors.blueGrey.shade700,
                     ),
                   ),
                 )
               : Icon(
                   isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                  color: isDarkMode ? Colors.yellow : Colors.blueGrey,
+                  color: isDarkMode ? Colors.yellow.shade300 : Colors.blueGrey.shade700,
                   size: 24, // Larger icon
                 ),
         ),

@@ -247,7 +247,7 @@ class _ProfileFormState extends State<ProfileForm> {
             items: _genderOptions
                 .map((gender) => DropdownMenuItem(
                       value: gender,
-                      child: Text(gender),
+                      child: Text(gender, style: TextStyle(color: Colors.white)), // Ensure text is visible in dark mode
                     ))
                 .toList(),
             onChanged: (value) => setState(() => _selectedGender = value),
@@ -260,7 +260,7 @@ class _ProfileFormState extends State<ProfileForm> {
             items: _languageOptions
                 .map((lang) => DropdownMenuItem(
                       value: lang,
-                      child: Text(lang),
+                      child: Text(lang, style: TextStyle(color: Colors.white)),
                     ))
                 .toList(),
             onChanged: (value) => setState(() => _selectedLanguage = value),

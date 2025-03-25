@@ -947,6 +947,8 @@ Tango: """;
   }
 
   Widget _buildChatMessages() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     if (_messages.isEmpty) {
       return Center(
         child: Column(
@@ -955,14 +957,14 @@ Tango: """;
             Icon(
               Icons.chat_bubble_outline,
               size: 64,
-              color: Colors.grey.shade300,
+              color: isDarkMode ? Colors.grey.shade600 : Colors.grey.shade300,
             ),
             const SizedBox(height: 16),
             Text(
               'Start your conversation',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey.shade600,
+                color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
               ),
             ),
           ],

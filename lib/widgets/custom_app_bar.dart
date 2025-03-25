@@ -24,6 +24,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return AppBar(
       title: Text(
         title,
@@ -40,7 +42,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: elevation,
       shadowColor: Colors.black.withOpacity(0.1),
       flexibleSpace: flexibleSpace,
-      iconTheme: IconThemeData(color: Theme.of(context).primaryColor),
+      iconTheme: IconThemeData(
+        color: isDarkMode ? Colors.white : Theme.of(context).primaryColor
+      ),
       titleTextStyle: TextStyle(
         color: Theme.of(context).textTheme.bodyLarge?.color,
         fontWeight: FontWeight.bold,

@@ -26,7 +26,9 @@ class ChatMessageBubble extends StatelessWidget {
         decoration: BoxDecoration(
           color: isUser 
               ? Theme.of(context).primaryColor.withOpacity(0.9)
-              : Colors.grey.shade200,
+              : Theme.of(context).brightness == Brightness.dark 
+                  ? const Color(0xFF2A2A2A) // Dark gray for AI messages in dark mode
+                  : Colors.grey.shade200,    // Light gray for AI messages in light mode
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -48,7 +50,11 @@ class ChatMessageBubble extends StatelessWidget {
                   Text(
                     'Typing',
                     style: TextStyle(
-                      color: isUser ? Colors.white : Colors.black87,
+                      color: isUser 
+                          ? Colors.white 
+                          : Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Colors.black87,
                       fontSize: 14,
                     ),
                   ),
@@ -70,21 +76,37 @@ class ChatMessageBubble extends StatelessWidget {
                 data: message,
                 styleSheet: MarkdownStyleSheet(
                   p: TextStyle(
-                    color: isUser ? Colors.white : Colors.black87,
+                    color: isUser 
+                        ? Colors.white 
+                        : Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black87,
                     fontSize: 16,
                   ),
                   h1: TextStyle(
-                    color: isUser ? Colors.white : Colors.black87,
+                    color: isUser 
+                        ? Colors.white 
+                        : Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black87,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                   h2: TextStyle(
-                    color: isUser ? Colors.white : Colors.black87,
+                    color: isUser 
+                        ? Colors.white 
+                        : Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black87,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                   h3: TextStyle(
-                    color: isUser ? Colors.white : Colors.black87,
+                    color: isUser 
+                        ? Colors.white 
+                        : Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black87,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -93,21 +115,37 @@ class ChatMessageBubble extends StatelessWidget {
                     decoration: TextDecoration.underline,
                   ),
                   em: TextStyle(
-                    color: isUser ? Colors.white : Colors.black87,
+                    color: isUser 
+                        ? Colors.white 
+                        : Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black87,
                     fontStyle: FontStyle.italic,
                   ),
                   strong: TextStyle(
-                    color: isUser ? Colors.white : Colors.black87,
+                    color: isUser 
+                        ? Colors.white 
+                        : Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black87,
                     fontWeight: FontWeight.bold,
                   ),
                   code: TextStyle(
-                    color: isUser ? Colors.white.withOpacity(0.9) : Colors.black54,
+                    color: isUser 
+                        ? Colors.white.withOpacity(0.9) 
+                        : Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white.withOpacity(0.9)
+                            : Colors.black54,
                     fontFamily: 'monospace',
                     fontSize: 15,
                   ),
                   codeblockPadding: const EdgeInsets.all(8),
                   blockquote: TextStyle(
-                    color: isUser ? Colors.white.withOpacity(0.9) : Colors.black54,
+                    color: isUser 
+                        ? Colors.white.withOpacity(0.9) 
+                        : Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white.withOpacity(0.9)
+                            : Colors.black54,
                     fontStyle: FontStyle.italic,
                   ),
                   blockquotePadding: const EdgeInsets.only(left: 8),
@@ -126,12 +164,17 @@ class ChatMessageBubble extends StatelessWidget {
   }
 
   Widget _buildDot(BuildContext context, int index) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return AnimatedContainer(
       duration: Duration(milliseconds: 300 * (index + 1)),
       height: 4,
       width: 4,
       decoration: BoxDecoration(
-        color: isUser ? Colors.white70 : Colors.grey,
+        color: isUser 
+            ? Colors.white70 
+            : isDarkMode 
+                ? Colors.grey.shade400  // Lighter grey in dark mode
+                : Colors.grey,
         borderRadius: BorderRadius.circular(5),
       ),
     );

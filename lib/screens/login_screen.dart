@@ -142,6 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
               l10n.forgotPassword,
               style: TextStyle(
                 color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -159,7 +160,11 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             Text(
               l10n.dontHaveAccount,
-              style: TextStyle(color: Colors.grey.shade700),
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.grey.shade300 
+                    : Colors.grey.shade700
+              ),
             ),
             TextButton(
               onPressed: () {
@@ -168,7 +173,9 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Text(
                 l10n.register,
                 style: TextStyle(
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).brightness == Brightness.dark 
+                      ? Colors.white 
+                      : Theme.of(context).primaryColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),

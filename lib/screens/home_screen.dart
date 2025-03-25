@@ -38,6 +38,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildWelcomeCard(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Container(
       width: double.infinity,
@@ -96,9 +97,18 @@ class HomeScreen extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.chat_bubble_outline),
+                Icon(
+                  Icons.chat_bubble_outline,
+                  color: Theme.of(context).primaryColor,
+                ),
                 const SizedBox(width: 8),
-                Text(l10n.chat),
+                Text(
+                  l10n.chat,
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
           ),
@@ -109,6 +119,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildFeatureSection(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     final features = [
       {
@@ -130,9 +141,10 @@ class HomeScreen extends StatelessWidget {
       children: [
         Text(
           l10n.features,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: isDarkMode ? Colors.white : Colors.black87,
           ),
         ),
         const SizedBox(height: 16),
@@ -145,6 +157,7 @@ class HomeScreen extends StatelessWidget {
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
               elevation: 2,
+              color: isDarkMode ? const Color(0xFF2A2A2A) : null,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -154,7 +167,9 @@ class HomeScreen extends StatelessWidget {
                   vertical: 8,
                 ),
                 leading: CircleAvatar(
-                  backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                  backgroundColor: isDarkMode 
+                      ? Theme.of(context).primaryColor.withOpacity(0.3)
+                      : Theme.of(context).primaryColor.withOpacity(0.1),
                   child: Icon(
                     feature['icon'] as IconData,
                     color: Theme.of(context).primaryColor,
@@ -162,12 +177,22 @@ class HomeScreen extends StatelessWidget {
                 ),
                 title: Text(
                   feature['title'] as String,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
+                    color: isDarkMode ? Colors.white : Colors.black87,
                   ),
                 ),
-                subtitle: Text(feature['description'] as String),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                subtitle: Text(
+                  feature['description'] as String,
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+                trailing: Icon(
+                  Icons.arrow_forward_ios, 
+                  size: 16,
+                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                ),
                 onTap: () {
                   Navigator.pushNamed(context, feature['route'] as String);
                 },

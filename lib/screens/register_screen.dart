@@ -160,7 +160,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? const Color(0xFF2A2A2A) 
+                        : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: SelectableText(
@@ -340,14 +342,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
           children: [
             Text(
               l10n.haveAccount,
-              style: TextStyle(color: Colors.grey.shade700),
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.grey.shade300 
+                    : Colors.grey.shade700
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
               child: Text(
                 l10n.login,
                 style: TextStyle(
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Theme.of(context).primaryColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),

@@ -17,9 +17,11 @@ class AppDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentUser = Supabase.instance.client.auth.currentUser;
     final theme = Theme.of(context);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Drawer(
       elevation: 2,
+      backgroundColor: isDarkMode ? const Color(0xFF1E1E1E) : null,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topRight: Radius.circular(16),
@@ -148,16 +150,19 @@ class AppDrawer extends StatelessWidget {
     VoidCallback? onTap,
     Widget? trailing,
   }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return ListTile(
       leading: Icon(
         icon,
-        color: Theme.of(context).primaryColor,
+        color: isDarkMode ? Colors.white : Theme.of(context).primaryColor,
       ),
       title: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontWeight: FontWeight.w500,
           fontSize: 16,
+          color: isDarkMode ? Colors.white : null,
         ),
       ),
       trailing: trailing,

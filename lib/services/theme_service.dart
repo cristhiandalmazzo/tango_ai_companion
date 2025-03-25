@@ -141,15 +141,21 @@ class ThemeService {
         backgroundColor: Color(0xFF1E1E1E),
         foregroundColor: Colors.white,
         elevation: 0,
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       colorScheme: ColorScheme.fromSeed(
         seedColor: const Color(0xFF5E6BF8),
         brightness: Brightness.dark,
+        onSurface: Colors.white,
+        onPrimary: Colors.white,
       ),
       cardTheme: const CardTheme(
         color: Color(0xFF1E1E1E),
         elevation: 2,
         shadowColor: Colors.black45,
+      ),
+      iconTheme: const IconThemeData(
+        color: Colors.white,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,

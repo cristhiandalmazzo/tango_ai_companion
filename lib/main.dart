@@ -114,6 +114,19 @@ class _MyAppState extends State<MyApp> {
           seedColor: Colors.deepPurple,
           brightness: Brightness.dark,
         ),
+        // Ensure text has good contrast against dark backgrounds
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+          displayMedium: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+          displaySmall: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+          headlineMedium: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
+          bodyLarge: TextStyle(color: Colors.white, fontSize: 16),
+          bodyMedium: TextStyle(color: Colors.white70, fontSize: 14),
+          bodySmall: TextStyle(color: Colors.white60, fontSize: 12),
+        ),
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
       ),
       themeMode: _themeMode,
       home: SplashScreen(
