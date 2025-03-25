@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
+import '../utils/error_utils.dart';
 
 class StorageService {
   static const String _profilePictureBucket = 'profilepictures';
@@ -16,8 +17,9 @@ class StorageService {
     try {
       final user = Supabase.instance.client.auth.currentUser;
       if (user == null) {
-        debugPrint('StorageService: Not logged in');
-        throw Exception('User not logged in');
+        const message = 'User not logged in';
+        ErrorUtils.logError('StorageService.uploadProfilePicture', message);
+        throw Exception(message);
       }
       
       String? filePath;
@@ -49,7 +51,9 @@ class StorageService {
         fileBytes = imageSource;
         fileName = '${const Uuid().v4()}.jpg';
       } else {
-        throw Exception('Unsupported image source type: ${imageSource.runtimeType}');
+        final message = 'Unsupported image source type: ${imageSource.runtimeType}';
+        ErrorUtils.logError('StorageService.uploadProfilePicture', message);
+        throw Exception(message);
       }
       
       // No need to create bucket - use the existing one
@@ -71,7 +75,7 @@ class StorageService {
               .from(_profilePictureBucket)
               .uploadBinary(uniqueFileName, fileBytes, fileOptions: options);
         } catch (e) {
-          debugPrint('StorageService: Error with fileOptions, trying without: $e');
+          ErrorUtils.logError('StorageService.uploadProfilePicture', 'Error with fileOptions, trying without: $e');
           // Try older API
           await Supabase.instance.client.storage
               .from(_profilePictureBucket)
@@ -92,7 +96,7 @@ class StorageService {
               .from(_profilePictureBucket)
               .upload(uniqueFileName, File(filePath), fileOptions: options);
         } catch (e) {
-          debugPrint('StorageService: Error with fileOptions, trying without: $e');
+          ErrorUtils.logError('StorageService.uploadProfilePicture', 'Error with fileOptions, trying without: $e');
           // Try older API
           await Supabase.instance.client.storage
               .from(_profilePictureBucket)
@@ -101,7 +105,9 @@ class StorageService {
             
         debugPrint('StorageService: Mobile upload successful');
       } else {
-        throw Exception('No valid file to upload');
+        const message = 'No valid file to upload';
+        ErrorUtils.logError('StorageService.uploadProfilePicture', message);
+        throw Exception(message);
       }
       
       // Get public URL
@@ -113,7 +119,7 @@ class StorageService {
       
       return publicUrl;
     } catch (e) {
-      debugPrint('StorageService: Error uploading profile picture: $e');
+      ErrorUtils.logError('StorageService.uploadProfilePicture', e);
       return null;
     }
   }
@@ -128,7 +134,8 @@ class StorageService {
       final pathSegments = uri.pathSegments;
       
       if (pathSegments.isEmpty) {
-        debugPrint('StorageService: Invalid file URL');
+        const message = 'Invalid file URL';
+        ErrorUtils.logError('StorageService.deleteProfilePicture', message);
         return false;
       }
       
@@ -142,7 +149,7 @@ class StorageService {
       debugPrint('StorageService: Deleted profile picture: $fileName');
       return true;
     } catch (e) {
-      debugPrint('StorageService: Error deleting profile picture: $e');
+      ErrorUtils.logError('StorageService.deleteProfilePicture', e);
       return false;
     }
   }

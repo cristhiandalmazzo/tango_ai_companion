@@ -5,6 +5,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'home_screen.dart';
 import 'package:uuid/uuid.dart';
+import '../extensions/theme_extension.dart';
+import '../utils/style_constants.dart';
+import '../utils/navigation_utils.dart';
+import '../utils/error_utils.dart';
+import '../utils/form_utils.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/app_container.dart';
@@ -48,24 +53,37 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   /// Updates the user's profile with the relationship id.
   Future<void> _updateUserProfileWithRelationship(String userId, String relationshipId) async {
-    final response = await Supabase.instance.client
-        .from('profiles')
-        .update({'relationship_id': relationshipId})
-        .eq('id', userId)
-        .select()
-        .maybeSingle();
+    try {
+      final response = await Supabase.instance.client
+          .from('profiles')
+          .update({'relationship_id': relationshipId})
+          .eq('id', userId)
+          .select()
+          .maybeSingle();
 
-    if (response != null) {
-      if (kDebugMode) {
-        print("Updated profile with relationship id: $relationshipId for user: $userId");
+      if (response != null) {
+        if (kDebugMode) {
+          print("Updated profile with relationship id: $relationshipId for user: $userId");
+        }
+      } else {
+        if (kDebugMode) {
+          print("Failed to update profile with relationship id for user: $userId");
+        }
+        if (mounted) {
+          ErrorUtils.showErrorSnackBar(
+            context, 
+            "Failed to update profile with relationship information."
+          );
+        }
       }
-    } else {
-      if (kDebugMode) {
-        print("Failed to update profile with relationship id for user: $userId");
+    } catch (e) {
+      ErrorUtils.logError('SignUpScreen._updateUserProfileWithRelationship', e);
+      if (mounted) {
+        ErrorUtils.showErrorSnackBar(
+          context, 
+          "Failed to update profile with relationship information."
+        );
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to update profile with relationship information.")),
-      );
     }
   }
 
@@ -156,20 +174,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(l10n.shareLink),
-                const SizedBox(height: 12),
+                SizedBox(height: StyleConstants.spacingM),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(StyleConstants.spacingM),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? const Color(0xFF2A2A2A) 
+                    color: context.isDarkMode 
+                        ? StyleConstants.darkSurface 
                         : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(StyleConstants.radiusM),
                   ),
                   child: SelectableText(
                     inviteUrl,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
-                      color: Theme.of(context).primaryColor,
+                      color: context.primaryColor,
                     ),
                   ),
                 ),
@@ -179,14 +197,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
               TextButton(
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: inviteUrl));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.linkCopied)),
+                  ErrorUtils.showErrorSnackBar(
+                    context,
+                    l10n.linkCopied,
                   );
                 },
                 child: Text(l10n.copyURL),
               ),
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => NavigationUtils.goBack(context),
                 child: Text(l10n.close),
               )
             ],
@@ -205,41 +224,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
         );
       }
     } on AuthException catch (e) {
-      if (kDebugMode) {
-        print("AuthException: ${e.message}");
-      }
+      ErrorUtils.logError('SignUpScreen._signUp', 'AuthException: ${e.message}');
+      
       // Show a simple snackbar for email already registered.
       final l10n = AppLocalizations.of(context)!;
       if (e.message.toLowerCase().contains("user already registered")) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.emailRegistered)),
+        ErrorUtils.showErrorSnackBar(
+          context,
+          l10n.emailRegistered,
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.message}")),
+        ErrorUtils.showErrorSnackBar(
+          context,
+          "Error: ${e.message}",
         );
       }
     } catch (error) {
-      if (kDebugMode) {
-        print("Unhandled error: $error");
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $error")),
+      ErrorUtils.logError('SignUpScreen._signUp', 'Unhandled error: $error');
+      ErrorUtils.showErrorSnackBar(
+        context,
+        ErrorUtils.getUserFriendlyMessage(error),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
-    
     return Scaffold(
-      backgroundColor: isDarkMode 
-          ? Color.lerp(const Color(0xFF121212), theme.colorScheme.primary, 0.03)
-          : theme.scaffoldBackgroundColor,
+      backgroundColor: context.darkBackgroundWithTint,
       body: SafeArea(
         child: SingleChildScrollView(
           child: AppContainer(
@@ -249,13 +265,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 Align(
                   alignment: Alignment.topRight,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 16),
+                    padding: EdgeInsets.only(top: StyleConstants.spacingM),
                     child: LanguageSelector(isCompact: false),
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: StyleConstants.spacingL),
                 _buildHeader(),
-                const SizedBox(height: 40),
+                SizedBox(height: StyleConstants.spacingXL),
                 _buildRegisterForm(),
               ],
             ),
@@ -267,42 +283,40 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget _buildHeader() {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
     
     return Column(
       children: [
         Container(
-          height: 80,
-          width: 80,
+          height: StyleConstants.avatarSizeLarge,
+          width: StyleConstants.avatarSizeLarge,
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withOpacity(0.2),
+            color: context.primaryColor.withOpacity(0.2),
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.person_add,
             size: 40,
-            color: theme.colorScheme.primary,
+            color: context.primaryColor,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: StyleConstants.spacingM),
         Text(
           l10n.register,
           style: TextStyle(
-            fontSize: 28,
+            fontSize: StyleConstants.fontSizeXL,
             fontWeight: FontWeight.bold,
-            color: theme.colorScheme.primary,
+            color: context.primaryColor,
           ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: StyleConstants.spacingS),
         Text(
           relationshipIdFromUrl != null 
               ? l10n.joinPartnerRelationship
               : l10n.welcome,
           style: TextStyle(
-            fontSize: 16,
-            color: isDarkMode ? Colors.white70 : Colors.grey.shade600,
+            fontSize: StyleConstants.fontSizeM,
+            color: context.textSecondaryColor,
           ),
           textAlign: TextAlign.center,
         ),
@@ -312,60 +326,45 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget _buildRegisterForm() {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
     
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        CustomTextField(
+    return FormUtils.buildFormLayout(
+      context: context,
+      fields: [
+        FormUtils.buildTextField(
+          context: context,
           controller: _nameController,
           label: l10n.name,
           hintText: l10n.enterFullName,
-          prefixIcon: Icon(Icons.person_outline, color: theme.colorScheme.primary),
+          prefixIcon: Icons.person_outline,
         ),
-        const SizedBox(height: 16),
-        CustomTextField(
+        FormUtils.buildEmailField(
+          context: context,
           controller: _emailController,
           label: l10n.email,
           hintText: l10n.enterEmail,
-          keyboardType: TextInputType.emailAddress,
-          prefixIcon: Icon(Icons.email_outlined, color: theme.colorScheme.primary),
         ),
-        const SizedBox(height: 16),
-        CustomTextField(
+        FormUtils.buildPasswordField(
+          context: context,
           controller: _passwordController,
           label: l10n.password,
           hintText: l10n.createPassword,
-          obscureText: true,
-          prefixIcon: Icon(Icons.lock_outline, color: theme.colorScheme.primary),
         ),
-        const SizedBox(height: 32),
-        CustomButton(
-          text: l10n.register,
-          onPressed: _signUp,
-          isLoading: _isLoading,
-          icon: Icons.arrow_forward,
-          backgroundColor: theme.colorScheme.primary,
-          textColor: theme.colorScheme.onPrimary,
-        ),
-        const SizedBox(height: 24),
+        SizedBox(height: StyleConstants.spacingM),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               l10n.haveAccount,
               style: TextStyle(
-                color: theme.brightness == Brightness.dark 
-                    ? Colors.white70
-                    : Colors.grey.shade700
+                color: context.textSecondaryColor,
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+              onPressed: () => NavigationUtils.replace(context, '/login'),
               child: Text(
                 l10n.login,
                 style: TextStyle(
-                  color: theme.colorScheme.primary,
+                  color: context.primaryColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -373,6 +372,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ],
         ),
       ],
+      buttonText: l10n.register,
+      onSubmit: _signUp,
+      isLoading: _isLoading,
+      buttonIcon: Icons.arrow_forward,
     );
   }
 }

@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../extensions/theme_extension.dart';
+import '../utils/style_constants.dart';
+import '../utils/navigation_utils.dart';
+import '../utils/error_utils.dart';
 import '../widgets/screen_container.dart';
 import '../services/relationship_service.dart';
 import '../widgets/app_container.dart';
@@ -29,9 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l10n = AppLocalizations.of(context)!;
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.mustBeLoggedIn)),
-      );
+      ErrorUtils.showErrorSnackBar(context, l10n.mustBeLoggedIn);
       return;
     }
 
@@ -41,17 +43,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // Get current relationship data
       final relationshipData = await RelationshipService.fetchRelationshipData();
       if (relationshipData == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.noActiveRelationship)),
-        );
+        if (mounted) {
+          ErrorUtils.showErrorSnackBar(context, l10n.noActiveRelationship);
+        }
         return;
       }
 
       final relationship = relationshipData['relationship'];
       if (relationship == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.noActiveRelationship)),
-        );
+        if (mounted) {
+          ErrorUtils.showErrorSnackBar(context, l10n.noActiveRelationship);
+        }
         return;
       }
 
@@ -85,19 +87,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.relationshipEnded)),
-        );
+        ErrorUtils.showErrorSnackBar(context, l10n.relationshipEnded);
         // Navigate back to home screen
-        Navigator.pushReplacementNamed(context, '/home');
+        NavigationUtils.replace(context, '/home');
       }
     } catch (e) {
+      ErrorUtils.logError('SettingsScreen._exitRelationship', e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.errorEndingRelationship + e.toString()),
-            backgroundColor: Colors.red,
-          ),
+        ErrorUtils.showErrorSnackBar(
+          context, 
+          l10n.errorEndingRelationship + ErrorUtils.getUserFriendlyMessage(e),
         );
       }
     } finally {
@@ -119,16 +118,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => NavigationUtils.goBack(context),
               child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                NavigationUtils.goBack(context);
                 _exitRelationship();
               },
               style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
+                foregroundColor: context.theme.colorScheme.error,
               ),
               child: Text(l10n.exitRelationship),
             ),
@@ -161,7 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   context,
                   icon: Icons.person_outline,
                   title: l10n.profile,
-                  onTap: () => Navigator.pushNamed(context, '/profile'),
+                  onTap: () => NavigationUtils.goTo(context, '/profile'),
                 ),
                 _buildDivider(),
                 _buildListTile(
@@ -211,8 +210,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   context,
                   icon: Icons.logout,
                   title: l10n.logout,
-                  onTap: () {
-                    // Handle logout
+                  onTap: () async {
+                    try {
+                      await Supabase.instance.client.auth.signOut();
+                      if (mounted) {
+                        NavigationUtils.goToAndClearStack(context, '/login');
+                      }
+                    } catch (e) {
+                      ErrorUtils.logError('SettingsScreen.logout', e);
+                      if (mounted) {
+                        ErrorUtils.showErrorSnackBar(
+                          context, 
+                          ErrorUtils.getUserFriendlyMessage(e),
+                        );
+                      }
+                    }
                   },
                 ),
               ]),
@@ -244,8 +256,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
+      leading: Icon(icon, color: context.primaryColor),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: StyleConstants.fontSizeM,
+          color: context.textPrimaryColor,
+        ),
+      ),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
     );
@@ -260,13 +278,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          padding: EdgeInsets.fromLTRB(
+            StyleConstants.spacingM, 
+            StyleConstants.spacingM, 
+            StyleConstants.spacingM, 
+            StyleConstants.spacingS
+          ),
           child: Text(
             title,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: StyleConstants.fontSizeS,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[600],
+              color: context.textSecondaryColor,
             ),
           ),
         ),
@@ -278,8 +301,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildLanguageSelector(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return ListTile(
-      leading: Icon(Icons.language, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : null),
-      title: Text(l10n.language, style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : null)),
+      leading: Icon(
+        Icons.language, 
+        color: context.primaryColor,
+      ),
+      title: Text(
+        l10n.language, 
+        style: TextStyle(
+          fontSize: StyleConstants.fontSizeM,
+          color: context.textPrimaryColor,
+        ),
+      ),
       trailing: LanguageSelector(isCompact: false),
     );
   }

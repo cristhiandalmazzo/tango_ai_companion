@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'profile_service.dart';
 import 'dart:math' as math;
 import 'package:uuid/uuid.dart';
+import '../utils/error_utils.dart';
 
 class RelationshipService {
   // Fetch relationship data including both partners
@@ -11,8 +12,9 @@ class RelationshipService {
     
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
-      debugPrint('RelationshipService: fetchRelationshipData() failed - Not logged in');
-      throw Exception("Not logged in");
+      const errorMsg = "Not logged in";
+      ErrorUtils.logError('RelationshipService.fetchRelationshipData', errorMsg);
+      throw Exception(errorMsg);
     }
     
     try {
@@ -21,8 +23,9 @@ class RelationshipService {
       final relationshipId = userProfile['relationship_id'];
       
       if (relationshipId == null || relationshipId == 'self') {
-        debugPrint('RelationshipService: No relationship found or user is in self mode');
-        throw Exception("No relationship found");
+        const errorMsg = "No relationship found";
+        ErrorUtils.logError('RelationshipService.fetchRelationshipData', errorMsg);
+        throw Exception(errorMsg);
       }
       
       debugPrint('RelationshipService: Looking up relationship with ID: $relationshipId');
@@ -35,8 +38,9 @@ class RelationshipService {
           .maybeSingle();
           
       if (relationship == null) {
-        debugPrint('RelationshipService: Relationship not found');
-        throw Exception("Relationship not found");
+        const errorMsg = "Relationship not found";
+        ErrorUtils.logError('RelationshipService.fetchRelationshipData', errorMsg);
+        throw Exception(errorMsg);
       }
       
       // Get both partner IDs
@@ -62,8 +66,9 @@ class RelationshipService {
           .maybeSingle();
           
       if (partnerAProfile == null) {
-        debugPrint('RelationshipService: Partner A profile not found');
-        throw Exception("Partner A profile not found");
+        const errorMsg = "Partner A profile not found";
+        ErrorUtils.logError('RelationshipService.fetchRelationshipData', errorMsg);
+        throw Exception(errorMsg);
       }
       
       // Create default partner B profile in case they haven't signed up
@@ -89,7 +94,8 @@ class RelationshipService {
         if (fetchedPartnerBProfile != null) {
           partnerBProfile = fetchedPartnerBProfile;
         } else {
-          debugPrint('RelationshipService: Partner B profile not found even though ID exists');
+          ErrorUtils.logError('RelationshipService.fetchRelationshipData', 
+            'Partner B profile not found even though ID exists');
         }
       } else {
         debugPrint('RelationshipService: Partner B has not signed up yet');
@@ -108,7 +114,7 @@ class RelationshipService {
         'is_partner_b_signed_up': isPartnerBSignedUp
       };
     } catch (e) {
-      debugPrint('RelationshipService: Error fetching relationship data: $e');
+      ErrorUtils.logError('RelationshipService.fetchRelationshipData', e);
       rethrow;
     }
   }
@@ -184,8 +190,9 @@ class RelationshipService {
     
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
-      debugPrint('RelationshipService: updateRelationship failed - Not logged in');
-      throw Exception("Not logged in");
+      const errorMsg = "Not logged in";
+      ErrorUtils.logError('RelationshipService.updateRelationship', errorMsg);
+      throw Exception(errorMsg);
     }
     
     try {
@@ -194,8 +201,9 @@ class RelationshipService {
       final relationshipId = userProfile['relationship_id'];
       
       if (relationshipId == null || relationshipId == 'self') {
-        debugPrint('RelationshipService: No relationship found or user is in self mode');
-        throw Exception("No relationship found");
+        const errorMsg = "No relationship found";
+        ErrorUtils.logError('RelationshipService.updateRelationship', errorMsg);
+        throw Exception(errorMsg);
       }
       
       // Update the relationship in the database
@@ -207,7 +215,7 @@ class RelationshipService {
       debugPrint('RelationshipService: Relationship updated successfully');
       return true;
     } catch (e) {
-      debugPrint('RelationshipService: Error updating relationship: $e');
+      ErrorUtils.logError('RelationshipService.updateRelationship', e);
       return false;
     }
   }
@@ -254,7 +262,7 @@ class RelationshipService {
         debugPrint('RelationshipService: Created new relationship with ID: $newRelationshipId');
         return newRelationshipId;
       } catch (e) {
-        debugPrint('RelationshipService: Error creating relationship: $e');
+        ErrorUtils.logError('RelationshipService.createNewRelationship', e);
         currentRetry++;
         
         if (currentRetry >= maxRetries) {
@@ -263,6 +271,8 @@ class RelationshipService {
       }
     }
     
-    throw Exception('Failed to create relationship after $maxRetries attempts');
+    const errorMsg = 'Failed to create relationship after max attempts';
+    ErrorUtils.logError('RelationshipService.createNewRelationship', errorMsg);
+    throw Exception(errorMsg);
   }
 } 

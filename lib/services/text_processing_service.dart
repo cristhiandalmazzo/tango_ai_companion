@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../utils/error_utils.dart';
 
 /// Service for consistent text processing throughout the app
 class TextProcessingService {
@@ -82,7 +83,7 @@ class TextProcessingService {
     } catch (e) {
       // Log the error but return a best-effort cleaned string
       // This avoids throwing exceptions for text processing issues
-      debugPrint('TextProcessingService: Error normalizing text: $e');
+      ErrorUtils.logError('TextProcessingService.normalizeText', e);
       
       debugPrint('TextProcessingService: Using fallback normalization');
       
@@ -125,7 +126,7 @@ class TextProcessingService {
       debugPrint('TextProcessingService: Sanitization complete, returning processed text of length ${result.length}');
       return result;
     } catch (e) {
-      debugPrint('TextProcessingService: Error sanitizing text: $e');
+      ErrorUtils.logError('TextProcessingService.sanitizeForDisplay', e);
       
       final fallbackResult = text
           // Modified regex to preserve emojis and other useful Unicode characters
@@ -175,7 +176,7 @@ class TextProcessingService {
       debugPrint('TextProcessingService: Normalization complete, returning processed text of length ${result.length}');
       return result;
     } catch (e) {
-      debugPrint('TextProcessingService: Error normalizing text with markup preservation: $e');
+      ErrorUtils.logError('TextProcessingService.normalizeTextPreserveMarkup', e);
       return text; // Return original text if normalization fails
     }
   }

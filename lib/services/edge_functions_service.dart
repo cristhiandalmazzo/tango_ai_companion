@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../supabase_config.dart';
+import '../utils/error_utils.dart';
 
 class EdgeFunctionsService {
   /// Base URL for Supabase edge functions
@@ -46,23 +47,31 @@ class EdgeFunctionsService {
         
         // Check if the expected data structure exists
         if (data == null) {
-          throw Exception('Response data is null');
+          const errorMsg = 'Response data is null';
+          ErrorUtils.logError('EdgeFunctionsService.callChatApi', errorMsg);
+          throw Exception(errorMsg);
         }
         
         if (!data.containsKey('choices') || 
             data['choices'] == null || 
             data['choices'].isEmpty) {
-          throw Exception('Response missing choices field: ${response.body}');
+          final errorMsg = 'Response missing choices field: ${response.body}';
+          ErrorUtils.logError('EdgeFunctionsService.callChatApi', errorMsg);
+          throw Exception(errorMsg);
         }
         
         final choice = data['choices'][0];
         if (choice == null || !choice.containsKey('message') || choice['message'] == null) {
-          throw Exception('Response missing message field: ${response.body}');
+          final errorMsg = 'Response missing message field: ${response.body}';
+          ErrorUtils.logError('EdgeFunctionsService.callChatApi', errorMsg);
+          throw Exception(errorMsg);
         }
         
         final message = choice['message'];
         if (!message.containsKey('content') || message['content'] == null) {
-          throw Exception('Response missing content field: ${response.body}');
+          final errorMsg = 'Response missing content field: ${response.body}';
+          ErrorUtils.logError('EdgeFunctionsService.callChatApi', errorMsg);
+          throw Exception(errorMsg);
         }
         
         final rawText = message['content'].trim();
@@ -75,12 +84,13 @@ class EdgeFunctionsService {
         debugPrint('EdgeFunctionsService: Text processed and returning response');
         return processedText;
       } else {
-        debugPrint('EdgeFunctionsService: API Error: ${response.statusCode} - ${response.body}');
-        throw Exception('Error ${response.statusCode}: ${response.body}');
+        final errorMsg = 'Error ${response.statusCode}: ${response.body}';
+        ErrorUtils.logError('EdgeFunctionsService.callChatApi', errorMsg);
+        throw Exception(errorMsg);
       }
     } catch (e) {
-      debugPrint('EdgeFunctionsService: Exception in callChatApi: $e');
-      throw Exception('Failed to call chat API: $e');
+      ErrorUtils.logError('EdgeFunctionsService.callChatApi', e);
+      throw Exception('Failed to call chat API: ${ErrorUtils.getUserFriendlyMessage(e)}');
     }
   }
   
@@ -132,23 +142,31 @@ class EdgeFunctionsService {
         
         // Check if the expected data structure exists
         if (data == null) {
-          throw Exception('Response data is null');
+          const errorMsg = 'Response data is null';
+          ErrorUtils.logError('EdgeFunctionsService.callChatApiWithContext', errorMsg);
+          throw Exception(errorMsg);
         }
         
         if (!data.containsKey('choices') || 
             data['choices'] == null || 
             data['choices'].isEmpty) {
-          throw Exception('Response missing choices field: ${response.body}');
+          final errorMsg = 'Response missing choices field: ${response.body}';
+          ErrorUtils.logError('EdgeFunctionsService.callChatApiWithContext', errorMsg);
+          throw Exception(errorMsg);
         }
         
         final choice = data['choices'][0];
         if (choice == null || !choice.containsKey('message') || choice['message'] == null) {
-          throw Exception('Response missing message field: ${response.body}');
+          final errorMsg = 'Response missing message field: ${response.body}';
+          ErrorUtils.logError('EdgeFunctionsService.callChatApiWithContext', errorMsg);
+          throw Exception(errorMsg);
         }
         
         final message = choice['message'];
         if (!message.containsKey('content') || message['content'] == null) {
-          throw Exception('Response missing content field: ${response.body}');
+          final errorMsg = 'Response missing content field: ${response.body}';
+          ErrorUtils.logError('EdgeFunctionsService.callChatApiWithContext', errorMsg);
+          throw Exception(errorMsg);
         }
         
         final rawText = message['content'].trim();
@@ -161,12 +179,13 @@ class EdgeFunctionsService {
         debugPrint('EdgeFunctionsService: Text processed and returning response');
         return processedText;
       } else {
-        debugPrint('EdgeFunctionsService: API Error: ${response.statusCode} - ${response.body}');
-        throw Exception('Error ${response.statusCode}: ${response.body}');
+        final errorMsg = 'Error ${response.statusCode}: ${response.body}';
+        ErrorUtils.logError('EdgeFunctionsService.callChatApiWithContext', errorMsg);
+        throw Exception(errorMsg);
       }
     } catch (e) {
-      debugPrint('EdgeFunctionsService: Exception in callChatApiWithContext: $e');
-      throw Exception('Failed to call chat API: $e');
+      ErrorUtils.logError('EdgeFunctionsService.callChatApiWithContext', e);
+      throw Exception('Failed to call chat API: ${ErrorUtils.getUserFriendlyMessage(e)}');
     }
   }
   
