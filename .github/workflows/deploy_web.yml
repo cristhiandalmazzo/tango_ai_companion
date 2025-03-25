@@ -27,7 +27,7 @@ jobs:
         run: flutter clean
 
       - name: Build for Web
-        run: flutter build web --web-renderer canvaskit
+        run: flutter build web
 
       - name: Hardcode base href for GitHub Pages
         run: |
