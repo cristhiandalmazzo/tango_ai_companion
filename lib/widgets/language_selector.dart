@@ -15,19 +15,32 @@ class LanguageSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
     final l10n = AppLocalizations.of(context)!;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return PopupMenuButton<Locale>(
       tooltip: l10n.changeLanguage,
+      color: Theme.of(context).scaffoldBackgroundColor,
       icon: isCompact 
-          ? const Icon(Icons.language, size: 20)
+          ? Icon(
+              Icons.language, 
+              size: 20,
+              color: isDarkMode ? Colors.white : null,
+            )
           : Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.language, size: 20),
+                Icon(
+                  Icons.language, 
+                  size: 20,
+                  color: isDarkMode ? Colors.white : null,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   _getLanguageName(languageProvider.locale, l10n),
-                  style: const TextStyle(fontSize: 14),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isDarkMode ? Colors.white : null,
+                  ),
                 ),
               ],
             ),
@@ -45,11 +58,20 @@ class LanguageSelector extends StatelessWidget {
                 margin: const EdgeInsets.only(right: 8),
                 child: const Text("🇺🇸", style: TextStyle(fontSize: 18)),
               ),
-              Text(l10n.english),
+              Text(
+                l10n.english,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : null,
+                ),
+              ),
               if (languageProvider.locale.languageCode == 'en')
-                const Padding(
-                  padding: EdgeInsets.only(left: 8),
-                  child: Icon(Icons.check, size: 18),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Icon(
+                    Icons.check, 
+                    size: 18,
+                    color: isDarkMode ? Colors.white : null,
+                  ),
                 ),
             ],
           ),
@@ -64,11 +86,20 @@ class LanguageSelector extends StatelessWidget {
                 margin: const EdgeInsets.only(right: 8),
                 child: const Text("🇧🇷", style: TextStyle(fontSize: 18)),
               ),
-              Text(l10n.portuguese),
+              Text(
+                l10n.portuguese,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : null,
+                ),
+              ),
               if (languageProvider.locale.languageCode == 'pt')
-                const Padding(
-                  padding: EdgeInsets.only(left: 8),
-                  child: Icon(Icons.check, size: 18),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Icon(
+                    Icons.check, 
+                    size: 18,
+                    color: isDarkMode ? Colors.white : null,
+                  ),
                 ),
             ],
           ),

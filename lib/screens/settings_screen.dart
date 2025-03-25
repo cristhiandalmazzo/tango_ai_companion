@@ -6,6 +6,7 @@ import '../widgets/screen_container.dart';
 import '../services/relationship_service.dart';
 import '../widgets/app_container.dart';
 import '../providers/language_provider.dart';
+import '../widgets/language_selector.dart';
 
 class SettingsScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
@@ -275,31 +276,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildLanguageSelector(BuildContext context) {
-    final languageProvider = Provider.of<LanguageProvider>(context);
     final l10n = AppLocalizations.of(context)!;
     return ListTile(
       leading: Icon(Icons.language, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : null),
       title: Text(l10n.language, style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : null)),
-      trailing: DropdownButton<Locale>(
-        value: languageProvider.locale,
-        underline: const SizedBox(),
-        onChanged: (Locale? newLocale) {
-          if (newLocale != null) {
-            languageProvider.setLocale(newLocale);
-          }
-        },
-        items: const [
-          DropdownMenuItem(
-            value: Locale('en'),
-            child: Text('English'),
-          ),
-          DropdownMenuItem(
-            value: Locale('pt', 'BR'),
-            child: Text('Português (Brasil)'),
-          ),
-        ],
-        style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : null),
-      ),
+      trailing: LanguageSelector(isCompact: false),
     );
   }
 } 
