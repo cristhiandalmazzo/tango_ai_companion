@@ -23,7 +23,7 @@ class AppContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     // Calculate 10% of screen width for horizontal padding
     final screenWidth = MediaQuery.of(context).size.width;
-    final horizontalPadding = screenWidth * 0.2;
+    final horizontalPadding = screenWidth * 0.1;
     
     return Container(
       color: backgroundColor,
