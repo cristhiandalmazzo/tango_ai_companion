@@ -4,6 +4,7 @@ import '../providers/language_provider.dart';
 import 'interests_chips.dart'; // Your reusable interests widget.
 import 'traits_chips.dart';    // Your reusable traits widget.
 import 'profile_picture_picker.dart'; // The new profile picture picker widget.
+import 'language_selector.dart'; // The language selector widget
 
 class ProfileForm extends StatefulWidget {
   final Map<String, dynamic> initialData;
@@ -112,13 +113,9 @@ class _ProfileFormState extends State<ProfileForm> {
   void _save() {
     if (!_formKey.currentState!.validate()) return;
     
-    // Convert selected language display name to language code
-    String? languageCode;
-    if (_selectedLanguage == 'Portuguese (Brazil)') {
-      languageCode = 'pt';
-    } else {
-      languageCode = 'en';
-    }
+    // Get the current language code directly from the provider
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    final String languageCode = languageProvider.locale.languageCode;
     
     final updates = {
       'name': _nameController.text,
@@ -135,19 +132,10 @@ class _ProfileFormState extends State<ProfileForm> {
       'updated_at': DateTime.now().toIso8601String(),
     };
     
-    // Update app-wide language when profile is updated
-    _updateAppLanguage(languageCode);
+    // Language is already updated via the LanguageSelector widget
+    // No need to call _updateAppLanguage here
     
     widget.onSave(updates);
-  }
-
-  void _updateAppLanguage(String languageCode) {
-    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-    if (languageCode == 'pt') {
-      languageProvider.setLocale(const Locale('pt', 'BR'));
-    } else {
-      languageProvider.setLocale(const Locale('en'));
-    }
   }
 
   void _handleProfileUpdated(Map<String, dynamic> updatedProfile) {
@@ -158,6 +146,8 @@ class _ProfileFormState extends State<ProfileForm> {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    
     return Form(
       key: _formKey,
       child: Column(
@@ -241,30 +231,85 @@ class _ProfileFormState extends State<ProfileForm> {
           ),
           const SizedBox(height: 16),
           // Gender Dropdown.
-          DropdownButtonFormField<String>(
-            value: _selectedGender,
-            decoration: const InputDecoration(labelText: 'Gender'),
-            items: _genderOptions
-                .map((gender) => DropdownMenuItem(
-                      value: gender,
-                      child: Text(gender, style: TextStyle(color: Colors.white)), // Ensure text is visible in dark mode
-                    ))
-                .toList(),
-            onChanged: (value) => setState(() => _selectedGender = value),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Gender',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Theme.of(context).dividerColor,
+                    width: 1,
+                  ),
+                ),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    // Ensure dropdown menu has proper background
+                    canvasColor: Theme.of(context).scaffoldBackgroundColor,
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: ButtonTheme(
+                      alignedDropdown: true,
+                      child: DropdownButton<String>(
+                        value: _selectedGender,
+                        isExpanded: true,
+                        hint: Text(
+                          'Select Gender',
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                          ),
+                        ),
+                        icon: Icon(
+                          Icons.arrow_drop_down,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        borderRadius: BorderRadius.circular(8),
+                        items: _genderOptions.map((gender) => DropdownMenuItem(
+                          value: gender,
+                          child: Text(
+                            gender,
+                            style: TextStyle(
+                              color: Theme.of(context).textTheme.bodyLarge?.color,
+                            ),
+                          ),
+                        )).toList(),
+                        onChanged: (value) => setState(() => _selectedGender = value),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
-          // Language Preference Dropdown.
-          DropdownButtonFormField<String>(
-            value: _selectedLanguage,
-            decoration: const InputDecoration(labelText: 'Language Preference'),
-            items: _languageOptions
-                .map((lang) => DropdownMenuItem(
-                      value: lang,
-                      child: Text(lang, style: TextStyle(color: Colors.white)),
-                    ))
-                .toList(),
-            onChanged: (value) => setState(() => _selectedLanguage = value),
+          
+          // Language Preference using LanguageSelector.
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Language Preference',
+                style: TextStyle(fontSize: 16),
+              ),
+              StatefulBuilder(
+                builder: (context, setState) {
+                  // When language changes, update the _selectedLanguage
+                  _selectedLanguage = languageProvider.locale.languageCode == 'pt' 
+                      ? 'Portuguese (Brazil)' 
+                      : 'English';
+                  
+                  return LanguageSelector(isCompact: false);
+                }
+              ),
+            ],
           ),
+          
           const SizedBox(height: 16),
           // Birthdate Picker.
           Row(
