@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'storage_service.dart';
 
 class ProfileService {
   static Future<Map<String, dynamic>> fetchProfile() async {
@@ -125,6 +126,47 @@ class ProfileService {
       return partnerProfile as Map<String, dynamic>;
     } catch (e) {
       debugPrint('ProfileService: Error fetching partner profile: $e');
+      return null;
+    }
+  }
+
+  // Update profile picture and return the updated profile
+  static Future<Map<String, dynamic>?> updateProfilePicture(dynamic imageSource) async {
+    debugPrint('ProfileService: updateProfilePicture() called');
+    
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      debugPrint('ProfileService: updateProfilePicture() failed - Not logged in');
+      throw Exception("Not logged in");
+    }
+    
+    try {
+      // 1. Get current profile to check if there's an existing picture
+      final currentProfile = await fetchProfile();
+      final currentPictureUrl = currentProfile['profile_picture_url'];
+      
+      // 2. Upload new picture
+      final newPictureUrl = await StorageService.uploadProfilePicture(imageSource);
+      
+      if (newPictureUrl == null) {
+        debugPrint('ProfileService: Failed to upload profile picture');
+        return null;
+      }
+      
+      // 3. Delete old picture if it exists
+      if (currentPictureUrl != null && currentPictureUrl.isNotEmpty) {
+        await StorageService.deleteProfilePicture(currentPictureUrl);
+      }
+      
+      // 4. Update profile with new picture URL
+      final updates = {
+        'profile_picture_url': newPictureUrl,
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+      
+      return await updateProfile(updates);
+    } catch (e) {
+      debugPrint('ProfileService: Error updating profile picture: $e');
       return null;
     }
   }

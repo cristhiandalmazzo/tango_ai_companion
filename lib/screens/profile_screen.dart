@@ -22,27 +22,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic> _profileData = {};
 
   Future<void> _loadProfile() async {
-    // This function should fetch profile data from Supabase.
-    // For example, you can move your fetch logic here, or call a service method.
-    // For demonstration, let's assume it returns a Map<String, dynamic>.
-    final data = await ProfileService.fetchProfile(); // You would implement this.
     setState(() {
-      _profileData = data;
-      _isLoading = false;
+      _isLoading = true;
     });
+    
+    try {
+      final data = await ProfileService.fetchProfile();
+      setState(() {
+        _profileData = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to load profile: ${e.toString()}")),
+      );
+    }
   }
 
   Future<void> _saveProfile(Map<String, dynamic> updates) async {
-    // This function should call your service to update the profile.
-    final result = await ProfileService.updateProfile(updates);
-    if (result != null) {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final result = await ProfileService.updateProfile(updates);
+      if (result != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profile updated successfully.")),
+        );
+        setState(() {
+          _profileData = result;
+          _isLoading = false;
+        });
+      } else {
+        throw Exception("Failed to update profile");
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Profile updated successfully.")),
-      );
-      _loadProfile();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to update profile.")),
+        SnackBar(content: Text("Failed to update profile: ${e.toString()}")),
       );
     }
   }
@@ -56,15 +79,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return ScreenContainer(
-      title: 'My Profile',
-      isLoading: _isLoading,
+      title: 'Edit Profile',
+      isLoading: false, // We'll handle loading states within the form
       currentThemeMode: widget.currentThemeMode,
       onThemeChanged: widget.onThemeChanged,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: ProfileForm(
-          initialData: _profileData,
-          onSave: _saveProfile,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // View Profile button
+            Container(
+              margin: const EdgeInsets.only(bottom: 20),
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/profile');
+                },
+                icon: const Icon(Icons.visibility),
+                label: const Text('View Profile'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+            
+            // Profile form
+            _profileData.isEmpty && _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ProfileForm(
+                  initialData: _profileData,
+                  onSave: _saveProfile,
+                  isLoading: _isLoading,
+                ),
+          ],
         ),
       ),
     );

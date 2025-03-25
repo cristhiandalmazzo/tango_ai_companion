@@ -283,13 +283,28 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   }
 
   Widget _buildPartnerCard(Map<String, dynamic> profile, bool isCurrentUser) {
-    final String name = profile['full_name'] ?? profile['username'] ?? 'Partner';
-    final int age = profile['age'] ?? 30;
+    final String name = profile['full_name'] ?? profile['username'] ?? profile['name'] ?? 'Partner';
+    
+    // Calculate age from birthdate if available
+    int? age;
+    if (profile['birthdate'] != null) {
+      final birthdate = DateTime.tryParse(profile['birthdate']);
+      if (birthdate != null) {
+        final now = DateTime.now();
+        age = now.year - birthdate.year;
+        // Adjust age if birthday hasn't occurred yet this year
+        if (now.month < birthdate.month || 
+            (now.month == birthdate.month && now.day < birthdate.day)) {
+          age--;
+        }
+      }
+    }
+    
     final String description = profile['bio'] ?? 
         (isCurrentUser ? 'You' : 'Your partner') + ' has not added a description yet.';
     
-    // Use avatar_url if available, or generate a placeholder
-    final String avatarUrl = profile['avatar_url'] ?? 
+    // Use profile_picture_url if available, or generate a placeholder
+    final String pictureUrl = profile['profile_picture_url'] ?? 
         'https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=random';
         
     return Expanded(
@@ -305,7 +320,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
             children: [
               CircleAvatar(
                 radius: 40,
-                backgroundImage: NetworkImage(avatarUrl),
+                backgroundImage: NetworkImage(pictureUrl),
                 onBackgroundImageError: (_, __) {
                   // Fallback for image loading errors
                 },
@@ -317,7 +332,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              if (age > 0) Text(
+              if (age != null) Text(
                 '$age years',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).textTheme.bodySmall?.color,
@@ -336,7 +351,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                 onPressed: () {
                   Navigator.pushReplacementNamed(
                     context, 
-                    isCurrentUser ? '/profile' : '/profile', // TODO: Create a view partner profile screen
+                    isCurrentUser ? '/profile' : '/partner_profile',
                   );
                 },
                 style: OutlinedButton.styleFrom(
@@ -344,7 +359,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text(isCurrentUser ? 'Edit Profile' : 'View Profile'),
+                child: Text(isCurrentUser ? 'View Profile' : 'View Profile'),
               ),
             ],
           ),

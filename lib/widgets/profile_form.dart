@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'interests_chips.dart'; // Your reusable interests widget.
 import 'traits_chips.dart';    // Your reusable traits widget.
+import 'profile_picture_picker.dart'; // The new profile picture picker widget.
 
 class ProfileForm extends StatefulWidget {
   final Map<String, dynamic> initialData;
   final Future<void> Function(Map<String, dynamic> updates) onSave;
+  final bool isLoading;
 
   const ProfileForm({
     Key? key,
     required this.initialData,
     required this.onSave,
+    this.isLoading = false,
   }) : super(key: key);
 
   @override
@@ -18,6 +21,7 @@ class ProfileForm extends StatefulWidget {
 
 class _ProfileFormState extends State<ProfileForm> {
   final _formKey = GlobalKey<FormState>();
+  Map<String, dynamic> _profileData = {};
 
   // Controllers for text fields.
   late final TextEditingController _nameController;
@@ -48,23 +52,23 @@ class _ProfileFormState extends State<ProfileForm> {
   @override
   void initState() {
     super.initState();
-    final data = widget.initialData;
-    _nameController = TextEditingController(text: data['name'] ?? '');
-    _bioController = TextEditingController(text: data['bio'] ?? '');
-    _locationController = TextEditingController(text: data['location'] ?? '');
-    _occupationController = TextEditingController(text: data['occupation'] ?? '');
-    _educationController = TextEditingController(text: data['education'] ?? '');
-    _selectedGender = data['gender'];
-    _selectedLanguage = data['language_preference'];
-    if (data['interests'] != null && data['interests'] is List) {
-      _selectedInterests = List<String>.from(data['interests']);
+    _profileData = Map<String, dynamic>.from(widget.initialData);
+    _nameController = TextEditingController(text: _profileData['name'] ?? '');
+    _bioController = TextEditingController(text: _profileData['bio'] ?? '');
+    _locationController = TextEditingController(text: _profileData['location'] ?? '');
+    _occupationController = TextEditingController(text: _profileData['occupation'] ?? '');
+    _educationController = TextEditingController(text: _profileData['education'] ?? '');
+    _selectedGender = _profileData['gender'];
+    _selectedLanguage = _profileData['language_preference'];
+    if (_profileData['interests'] != null && _profileData['interests'] is List) {
+      _selectedInterests = List<String>.from(_profileData['interests']);
     }
-    if (data['personality_traits'] != null && data['personality_traits'] is List) {
-      _selectedTraits = List<String>.from(data['personality_traits']);
+    if (_profileData['personality_traits'] != null && _profileData['personality_traits'] is List) {
+      _selectedTraits = List<String>.from(_profileData['personality_traits']);
     }
     // Initialize _birthDate from backend if available.
-    if (data['birthdate'] != null) {
-      _birthDate = DateTime.tryParse(data['birthdate']);
+    if (_profileData['birthdate'] != null) {
+      _birthDate = DateTime.tryParse(_profileData['birthdate']);
     }
   }
 
@@ -112,6 +116,12 @@ class _ProfileFormState extends State<ProfileForm> {
     widget.onSave(updates);
   }
 
+  void _handleProfileUpdated(Map<String, dynamic> updatedProfile) {
+    setState(() {
+      _profileData = updatedProfile;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -119,6 +129,17 @@ class _ProfileFormState extends State<ProfileForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Profile picture picker
+          Center(
+            child: ProfilePicturePicker(
+              currentImageUrl: _profileData['profile_picture_url'],
+              onProfileUpdated: _handleProfileUpdated,
+              isLoading: widget.isLoading,
+              size: 120,
+            ),
+          ),
+          const SizedBox(height: 24),
+          
           // Name.
           TextFormField(
             controller: _nameController,

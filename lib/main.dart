@@ -7,7 +7,9 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/user_profile_view_screen.dart';
 import 'screens/relationship_screen.dart';
+import 'screens/partner_profile_screen.dart';
 import 'supabase_config.dart';
 import 'services/theme_service.dart';
 
@@ -70,7 +72,11 @@ class _MyAppState extends State<MyApp> {
           currentThemeMode: _themeMode,
           onThemeChanged: _changeTheme,
         ),
-        '/profile': (context) => ProfileScreen(
+        '/profile': (context) => UserProfileViewScreen(
+          currentThemeMode: _themeMode,
+          onThemeChanged: _changeTheme,
+        ),
+        '/edit_profile': (context) => ProfileScreen(
           currentThemeMode: _themeMode,
           onThemeChanged: _changeTheme,
         ),
@@ -79,6 +85,10 @@ class _MyAppState extends State<MyApp> {
           onThemeChanged: _changeTheme,
         ),
         '/relationship': (context) => RelationshipScreen(
+          currentThemeMode: _themeMode,
+          onThemeChanged: _changeTheme,
+        ),
+        '/partner_profile': (context) => PartnerProfileScreen(
           currentThemeMode: _themeMode,
           onThemeChanged: _changeTheme,
         ),
