@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 import '../services/profile_service.dart';
+import '../extensions/theme_extension.dart';
+import '../utils/style_constants.dart';
+import '../utils/navigation_utils.dart';
+import '../utils/error_utils.dart';
+import '../widgets/loading_indicator.dart';
 import 'theme_toggle.dart';
+import 'user_avatar.dart';
 
 class AppDrawer extends StatefulWidget {
   final ThemeMode currentThemeMode;
@@ -38,9 +44,7 @@ class _AppDrawerState extends State<AppDrawer> {
         });
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('Error loading profile: $e');
-      }
+      ErrorUtils.logError('AppDrawer', e);
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -52,18 +56,16 @@ class _AppDrawerState extends State<AppDrawer> {
   @override
   Widget build(BuildContext context) {
     final currentUser = Supabase.instance.client.auth.currentUser;
-    final theme = Theme.of(context);
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Drawer(
       elevation: 2,
-      backgroundColor: isDarkMode 
-          ? Color.lerp(const Color(0xFF2C2C2C), theme.colorScheme.primary, 0.05)
-          : theme.colorScheme.background,
+      backgroundColor: context.isDarkMode 
+          ? Color.lerp(StyleConstants.darkSurface, context.primaryColor, StyleConstants.darkCardTint)
+          : context.theme.colorScheme.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
-          topRight: Radius.circular(16),
-          bottomRight: Radius.circular(16),
+          topRight: Radius.circular(StyleConstants.radiusL),
+          bottomRight: Radius.circular(StyleConstants.radiusL),
         ),
       ),
       child: Column(
@@ -77,25 +79,25 @@ class _AppDrawerState extends State<AppDrawer> {
                   context: context,
                   icon: Icons.home_outlined,
                   title: 'Home',
-                  onTap: () => Navigator.pushReplacementNamed(context, '/home'),
+                  onTap: () => NavigationUtils.replace(context, '/home'),
                 ),
                 _buildNavItem(
                   context: context,
                   icon: Icons.person_outline,
                   title: 'Profile',
-                  onTap: () => Navigator.pushReplacementNamed(context, '/profile'),
+                  onTap: () => NavigationUtils.replace(context, '/profile'),
                 ),
                 _buildNavItem(
                   context: context,
                   icon: Icons.favorite_border_outlined,
                   title: 'Relationship',
-                  onTap: () => Navigator.pushReplacementNamed(context, '/relationship'),
+                  onTap: () => NavigationUtils.replace(context, '/relationship'),
                 ),
                 _buildNavItem(
                   context: context,
                   icon: Icons.chat_outlined,
                   title: 'AI Chat',
-                  onTap: () => Navigator.pushReplacementNamed(context, '/ai_chat'),
+                  onTap: () => NavigationUtils.replace(context, '/ai_chat'),
                 ),
                 const Divider(),
                 _buildNavItem(
@@ -124,7 +126,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   context: context,
                   icon: Icons.settings_outlined,
                   title: 'Settings',
-                  onTap: () => Navigator.pushReplacementNamed(context, '/settings'),
+                  onTap: () => NavigationUtils.replace(context, '/settings'),
                 ),
               ],
             ),
@@ -136,16 +138,16 @@ class _AppDrawerState extends State<AppDrawer> {
   }
 
   Widget _buildDrawerHeader(BuildContext context, User? user) {
-    final theme = Theme.of(context);
     final String? profilePictureUrl = _userProfile?['profile_picture_url'];
     final String displayName = _userProfile?['name'] ?? user?.email?.split('@').first ?? 'Welcome';
+    final String userId = user?.id ?? '';
     
     return DrawerHeader(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            theme.colorScheme.primary,
-            theme.colorScheme.primary.withOpacity(0.7),
+            context.primaryColor,
+            context.primaryColor.withOpacity(0.7),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -155,59 +157,51 @@ class _AppDrawerState extends State<AppDrawer> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           GestureDetector(
-            onTap: () => Navigator.pushReplacementNamed(context, '/profile'),
+            onTap: () => NavigationUtils.replace(context, '/profile'),
             child: _isLoading 
-                ? CircleAvatar(
-                    radius: 30,
-                    backgroundColor: theme.colorScheme.onPrimary.withOpacity(0.25),
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: theme.colorScheme.onPrimary,
-                      ),
-                    ),
+                ? LoadingIndicator(
+                    size: StyleConstants.avatarSizeLarge,
+                    color: context.theme.colorScheme.onPrimary,
+                    centered: false,
                   )
-                : profilePictureUrl != null && profilePictureUrl.isNotEmpty
-                    ? CircleAvatar(
-                        radius: 30,
-                        backgroundColor: theme.colorScheme.onPrimary.withOpacity(0.25),
-                        backgroundImage: NetworkImage(profilePictureUrl),
-                        onBackgroundImageError: (_, __) {
-                          // Handle image loading error
-                        },
+                : userId.isNotEmpty
+                    ? UserAvatar(
+                        userId: userId,
+                        size: StyleConstants.avatarSizeLarge,
+                        imageUrl: profilePictureUrl,
+                        name: displayName,
+                        onTap: () => NavigationUtils.replace(context, '/profile'),
                       )
                     : CircleAvatar(
                         radius: 30,
-                        backgroundColor: theme.colorScheme.onPrimary.withOpacity(0.25),
+                        backgroundColor: context.theme.colorScheme.onPrimary.withOpacity(0.25),
                         child: Icon(
                           Icons.person,
                           size: 30,
-                          color: theme.colorScheme.onPrimary,
+                          color: context.theme.colorScheme.onPrimary,
                         ),
                       ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: StyleConstants.spacingM),
           GestureDetector(
-            onTap: () => Navigator.pushReplacementNamed(context, '/profile'),
+            onTap: () => NavigationUtils.replace(context, '/profile'),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   displayName,
                   style: TextStyle(
-                    color: theme.colorScheme.onPrimary,
-                    fontSize: 20,
+                    color: context.theme.colorScheme.onPrimary,
+                    fontSize: StyleConstants.fontSizeL,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: StyleConstants.spacingXS),
                 Text(
                   user?.email ?? '',
                   style: TextStyle(
-                    color: theme.colorScheme.onPrimary.withOpacity(0.7),
-                    fontSize: 14,
+                    color: context.theme.colorScheme.onPrimary.withOpacity(0.7),
+                    fontSize: StyleConstants.fontSizeS,
                   ),
                 ),
               ],
@@ -225,57 +219,57 @@ class _AppDrawerState extends State<AppDrawer> {
     VoidCallback? onTap,
     Widget? trailing,
   }) {
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
-    
     return ListTile(
       leading: Icon(
         icon,
-        color: theme.colorScheme.primary,
+        color: context.primaryColor,
       ),
       title: Text(
         title,
         style: TextStyle(
           fontWeight: FontWeight.w500,
-          fontSize: 16,
-          color: isDarkMode 
-              ? theme.colorScheme.primary.withOpacity(0.9)
-              : theme.colorScheme.primary.withOpacity(0.9),
+          fontSize: StyleConstants.fontSizeM,
+          color: context.primaryColor.withOpacity(0.9),
         ),
       ),
       trailing: trailing,
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 4,
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: StyleConstants.spacingL,
+        vertical: StyleConstants.spacingXS,
       ),
     );
   }
 
   Widget _buildLogoutButton(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(StyleConstants.spacingL),
       child: ElevatedButton.icon(
         onPressed: () async {
-          Navigator.pop(context); // Close the drawer first.
-          await Supabase.instance.client.auth.signOut();
-          Navigator.pushNamedAndRemoveUntil(
-            context, '/login', (route) => false,
-          );
+          NavigationUtils.goBack(context); // Close the drawer first.
+          try {
+            await Supabase.instance.client.auth.signOut();
+            if (mounted) {
+              NavigationUtils.goToAndClearStack(context, '/login');
+            }
+          } catch (e) {
+            ErrorUtils.logError('AppDrawer', e);
+            if (mounted) {
+              ErrorUtils.showErrorSnackBar(context, 'Error signing out. Please try again.');
+            }
+          }
         },
         icon: const Icon(Icons.logout),
         label: const Text('Logout'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: theme.colorScheme.error,
-          foregroundColor: theme.colorScheme.onError,
-          padding: const EdgeInsets.symmetric(
-            vertical: 12,
-            horizontal: 16,
+          backgroundColor: context.theme.colorScheme.error,
+          foregroundColor: context.theme.colorScheme.onError,
+          padding: EdgeInsets.symmetric(
+            vertical: StyleConstants.spacingM,
+            horizontal: StyleConstants.spacingM,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(StyleConstants.radiusM),
           ),
         ),
       ),

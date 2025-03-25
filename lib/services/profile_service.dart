@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
+import '../utils/error_utils.dart';
 import 'storage_service.dart';
 
 class ProfileService {
@@ -8,8 +9,9 @@ class ProfileService {
     
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
-      debugPrint('ProfileService: fetchProfile() failed - Not logged in');
-      throw Exception("Not logged in");
+      const message = "Not logged in";
+      ErrorUtils.logError('ProfileService.fetchProfile', message);
+      throw Exception(message);
     }
     
     debugPrint('ProfileService: Fetching profile for user ${user.id}');
@@ -22,14 +24,15 @@ class ProfileService {
           .maybeSingle();
           
       if (response == null) {
-        debugPrint('ProfileService: Profile not found for user ${user.id}');
-        throw Exception("Profile not found");
+        const message = "Profile not found";
+        ErrorUtils.logError('ProfileService.fetchProfile', message);
+        throw Exception(message);
       }
       
       debugPrint('ProfileService: Successfully fetched profile for user ${user.id}');
       return response as Map<String, dynamic>;
     } catch (e) {
-      debugPrint('ProfileService: Error fetching profile: $e');
+      ErrorUtils.logError('ProfileService.fetchProfile', e);
       rethrow;
     }
   }
@@ -39,8 +42,9 @@ class ProfileService {
     
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
-      debugPrint('ProfileService: updateProfile() failed - Not logged in');
-      throw Exception("Not logged in");
+      const message = "Not logged in";
+      ErrorUtils.logError('ProfileService.updateProfile', message);
+      throw Exception(message);
     }
     
     debugPrint('ProfileService: Updating profile for user ${user.id}');
@@ -56,7 +60,7 @@ class ProfileService {
       debugPrint('ProfileService: Successfully updated profile for user ${user.id}');
       return response as Map<String, dynamic>?;
     } catch (e) {
-      debugPrint('ProfileService: Error updating profile: $e');
+      ErrorUtils.logError('ProfileService.updateProfile', e);
       rethrow;
     }
   }
@@ -67,8 +71,9 @@ class ProfileService {
     
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
-      debugPrint('ProfileService: fetchPartnerProfile() failed - Not logged in');
-      throw Exception("Not logged in");
+      const message = "Not logged in";
+      ErrorUtils.logError('ProfileService.fetchPartnerProfile', message);
+      throw Exception(message);
     }
     
     try {
@@ -125,7 +130,7 @@ class ProfileService {
       debugPrint('ProfileService: Successfully fetched partner profile');
       return partnerProfile as Map<String, dynamic>;
     } catch (e) {
-      debugPrint('ProfileService: Error fetching partner profile: $e');
+      ErrorUtils.logError('ProfileService.fetchPartnerProfile', e);
       return null;
     }
   }
@@ -136,8 +141,9 @@ class ProfileService {
     
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
-      debugPrint('ProfileService: updateProfilePicture() failed - Not logged in');
-      throw Exception("Not logged in");
+      const message = "Not logged in";
+      ErrorUtils.logError('ProfileService.updateProfilePicture', message);
+      throw Exception(message);
     }
     
     try {
@@ -149,7 +155,8 @@ class ProfileService {
       final newPictureUrl = await StorageService.uploadProfilePicture(imageSource);
       
       if (newPictureUrl == null) {
-        debugPrint('ProfileService: Failed to upload profile picture');
+        const message = "Failed to upload profile picture";
+        ErrorUtils.logError('ProfileService.updateProfilePicture', message);
         return null;
       }
       
@@ -166,7 +173,7 @@ class ProfileService {
       
       return await updateProfile(updates);
     } catch (e) {
-      debugPrint('ProfileService: Error updating profile picture: $e');
+      ErrorUtils.logError('ProfileService.updateProfilePicture', e);
       return null;
     }
   }

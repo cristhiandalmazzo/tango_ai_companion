@@ -3,6 +3,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../providers/language_provider.dart';
+import '../extensions/theme_extension.dart';
+import '../utils/style_constants.dart';
+import '../utils/navigation_utils.dart';
+import '../utils/error_utils.dart';
+import '../utils/form_utils.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/app_container.dart';
@@ -31,30 +36,33 @@ class _LoginScreenState extends State<LoginScreen> {
       
       if (response.user != null) {
         await Provider.of<LanguageProvider>(context, listen: false).syncWithUserProfile();
-        Navigator.pushReplacementNamed(context, '/home');
+        if (mounted) {
+          NavigationUtils.replace(context, '/home');
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sign in failed.')),
-        );
+        if (mounted) {
+          ErrorUtils.showErrorSnackBar(context, 'Sign in failed.');
+        }
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
-      );
+      ErrorUtils.logError('LoginScreen._signIn', error);
+      if (mounted) {
+        ErrorUtils.showErrorSnackBar(
+          context, 
+          ErrorUtils.getUserFriendlyMessage(error),
+        );
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
-    
     return Scaffold(
-      backgroundColor: isDarkMode 
-          ? Color.lerp(const Color(0xFF121212), theme.colorScheme.primary, 0.03)
-          : theme.scaffoldBackgroundColor,
+      backgroundColor: context.darkBackgroundWithTint,
       body: SafeArea(
         child: SingleChildScrollView(
           child: AppContainer(
@@ -64,13 +72,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 Align(
                   alignment: Alignment.topRight,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 16),
+                    padding: EdgeInsets.only(top: StyleConstants.spacingM),
                     child: LanguageSelector(isCompact: false),
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: StyleConstants.spacingL),
                 _buildHeader(),
-                const SizedBox(height: 40),
+                SizedBox(height: StyleConstants.spacingXL),
                 _buildLoginForm(),
               ],
             ),
@@ -82,40 +90,38 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildHeader() {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
     
     return Column(
       children: [
         Container(
-          height: 80,
-          width: 80,
+          height: StyleConstants.avatarSizeLarge,
+          width: StyleConstants.avatarSizeLarge,
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withOpacity(0.2),
+            color: context.primaryColor.withOpacity(0.2),
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.lock_outline,
             size: 40,
-            color: theme.colorScheme.primary,
+            color: context.primaryColor,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: StyleConstants.spacingM),
         Text(
           l10n.welcome,
           style: TextStyle(
-            fontSize: 28,
+            fontSize: StyleConstants.fontSizeXL,
             fontWeight: FontWeight.bold,
-            color: theme.colorScheme.primary,
+            color: context.primaryColor,
           ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: StyleConstants.spacingS),
         Text(
           l10n.signInToContinue,
           style: TextStyle(
-            fontSize: 16,
-            color: isDarkMode ? Colors.white70 : Colors.grey.shade600,
+            fontSize: StyleConstants.fontSizeM,
+            color: context.textSecondaryColor,
           ),
           textAlign: TextAlign.center,
         ),
@@ -125,69 +131,51 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildLoginForm() {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
     
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        CustomTextField(
+    return FormUtils.buildFormLayout(
+      context: context,
+      fields: [
+        FormUtils.buildEmailField(
+          context: context,
           controller: _emailController,
           label: l10n.email,
           hintText: l10n.enterEmail,
-          keyboardType: TextInputType.emailAddress,
-          prefixIcon: Icon(Icons.email_outlined, color: theme.colorScheme.primary),
         ),
-        const SizedBox(height: 16),
-        CustomTextField(
+        FormUtils.buildPasswordField(
+          context: context,
           controller: _passwordController,
           label: l10n.password,
           hintText: l10n.createPassword,
-          obscureText: true,
-          prefixIcon: Icon(Icons.lock_outline, color: theme.colorScheme.primary),
         ),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
-            onPressed: () {
-              // Navigate to password reset
-              Navigator.pushNamed(context, '/forgot-password');
-            },
+            onPressed: () => NavigationUtils.goTo(context, '/forgot-password'),
             child: Text(
               l10n.forgotPassword,
               style: TextStyle(
-                color: theme.colorScheme.primary,
+                color: context.primaryColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
         ),
-        const SizedBox(height: 24),
-        CustomButton(
-          text: l10n.login,
-          onPressed: _signIn,
-          isLoading: _isLoading,
-          icon: Icons.arrow_forward,
-          backgroundColor: theme.colorScheme.primary,
-          textColor: theme.colorScheme.onPrimary,
-        ),
-        const SizedBox(height: 24),
+        SizedBox(height: StyleConstants.spacingM),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               l10n.dontHaveAccount,
               style: TextStyle(
-                color: theme.brightness == Brightness.dark 
-                    ? Colors.white70
-                    : Colors.grey.shade700
+                color: context.textSecondaryColor,
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.pushReplacementNamed(context, '/signup'),
+              onPressed: () => NavigationUtils.replace(context, '/signup'),
               child: Text(
                 l10n.register,
                 style: TextStyle(
-                  color: theme.colorScheme.primary,
+                  color: context.primaryColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -195,6 +183,10 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
       ],
+      buttonText: l10n.login,
+      onSubmit: _signIn,
+      isLoading: _isLoading,
+      buttonIcon: Icons.arrow_forward,
     );
   }
 }
