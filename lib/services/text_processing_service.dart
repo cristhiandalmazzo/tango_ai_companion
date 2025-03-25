@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Service for consistent text processing throughout the app
 class TextProcessingService {
@@ -21,6 +22,8 @@ class TextProcessingService {
       
       // Replace fancy quotes, apostrophes and problematic characters
       final replacedQuotes = text
+          // Fix the U+0080 U+0099 sequence that appears in contractions
+          .replaceAll('\u0080\u0099', "'")
           .replaceAll(''', "'")
           .replaceAll(''', "'")
           .replaceAll('"', '"')
@@ -52,6 +55,17 @@ class TextProcessingService {
           .replaceAll('ât', "'t") // Fix common pattern
           .replaceAll('än', "'n") // Fix common pattern
           .replaceAll('ân', "'n") // Fix common pattern
+          // Fix specific contractions that are causing issues
+          .replaceAll('whatâ', "what'")
+          .replaceAll('whatä', "what'")
+          .replaceAll('thatâ', "that'")
+          .replaceAll('thatä', "that'")
+          .replaceAll('itâ', "it'")
+          .replaceAll('itä', "it'")
+          .replaceAll('thereâ', "there'")
+          .replaceAll('thereä', "there'")
+          .replaceAll('hereâ', "here'")
+          .replaceAll('hereä', "here'")
           // Fix cases where 'ä' or 'â' appears instead of a space
           .replaceAll('äwhether', ' whether')
           .replaceAll('âwhether', ' whether')
@@ -201,127 +215,35 @@ class TextProcessingService {
     try {
       debugPrint('TextProcessingService: Applying text normalization rules while preserving markup');
       
-      // Replace fancy quotes, apostrophes and problematic characters
-      final replacedQuotes = text
+      // First, normalize all apostrophe sequences to a single standard apostrophe
+      var result = text;
+      
+      // Handle the U+0080 U+0099 sequence
+      result = result.replaceAll('\u0080\u0099', "'");
+      
+      // Handle other special apostrophes
+      result = result
           .replaceAll(''', "'")
           .replaceAll(''', "'")
+          .replaceAll('\u2019', "'")
+          .replaceAll('ä', "'")
+          .replaceAll('â', "'");
+      
+      // Fix any double apostrophes that might have been created
+      result = result.replaceAll("''", "'");
+      
+      // Handle quotes and dashes
+      result = result
           .replaceAll('"', '"')
           .replaceAll('"', '"')
           .replaceAll('–', '-')
-          .replaceAll('—', '-')
-          .replaceAll('Here\u2019s', "Here's")
-          .replaceAll('There\u2019s', "There's")
-          .replaceAll('It\u2019s', "It's")
-          .replaceAll('What\u2019s', "What's")
-          .replaceAll('That\u2019s', "That's")
-          // Fix specific encoding issues we've observed
-          .replaceAll('ä', "'")   // Fix incorrect 'ä' that appears instead of apostrophes
-          .replaceAll('â', "'")   // Fix incorrect 'â' that appears instead of apostrophes
-          .replaceAll('ås', "'s") // Fix incorrect 'ås' pattern
-          .replaceAll('äs', "'s") // Fix incorrect 'äs' pattern
-          .replaceAll('âs', "'s") // Fix incorrect 'âs' pattern
-          .replaceAll('eä', "e'") // Fix common pattern
-          .replaceAll('eâ', "e'") // Fix common pattern
-          .replaceAll('äre', "'re") // Fix common pattern
-          .replaceAll('âre', "'re") // Fix common pattern
-          .replaceAll('äve', "'ve") // Fix common pattern
-          .replaceAll('âve', "'ve") // Fix common pattern
-          .replaceAll('äll', "'ll") // Fix common pattern
-          .replaceAll('âll', "'ll") // Fix common pattern
-          .replaceAll('äd', "'d") // Fix common pattern
-          .replaceAll('âd', "'d") // Fix common pattern
-          .replaceAll('ät', "'t") // Fix common pattern
-          .replaceAll('ât', "'t") // Fix common pattern
-          .replaceAll('än', "'n") // Fix common pattern
-          .replaceAll('ân', "'n") // Fix common pattern
-          // Fix cases where 'ä' or 'â' appears instead of a space
-          .replaceAll('äwhether', ' whether')
-          .replaceAll('âwhether', ' whether')
-          .replaceAll('äjust', ' just')
-          .replaceAll('âjust', ' just')
-          .replaceAll('äand', ' and')
-          .replaceAll('âand', ' and')
-          .replaceAll('äor', ' or')
-          .replaceAll('âor', ' or')
-          .replaceAll('äbut', ' but')
-          .replaceAll('âbut', ' but')
-          .replaceAll('äso', ' so')
-          .replaceAll('âso', ' so')
-          .replaceAll('äthen', ' then')
-          .replaceAll('âthen', ' then')
-          .replaceAll('äthe', ' the')
-          .replaceAll('âthe', ' the')
-          .replaceAll('äin', ' in')
-          .replaceAll('âin', ' in')
-          .replaceAll('äon', ' on')
-          .replaceAll('âon', ' on')
-          .replaceAll('äat', ' at')
-          .replaceAll('âat', ' at')
-          .replaceAll('äfor', ' for')
-          .replaceAll('âfor', ' for')
-          .replaceAll('äwith', ' with')
-          .replaceAll('âwith', ' with')
-          .replaceAll('äby', ' by')
-          .replaceAll('âby', ' by')
-          .replaceAll('äabout', ' about')
-          .replaceAll('âabout', ' about')
-          .replaceAll('äif', ' if')
-          .replaceAll('âif', ' if')
-          .replaceAll('äof', ' of')
-          .replaceAll('âof', ' of')
-          .replaceAll('ähow', ' how')
-          .replaceAll('âhow', ' how')
-          .replaceAll('âd like', "'d like");
+          .replaceAll('—', '-');
       
-      debugPrint('TextProcessingService: Applied character replacements, now fixing spacing issues');
-      
-      // Fix spacing issues by replacing problematic characters when they appear as space replacements
-      String fixSpacing(String input) {
-        // Replace standalone 'ä' or 'â' that should be spaces (between words)
-        var result = input.replaceAllMapped(RegExp(r'(\w)ä(\w)'), (match) {
-          return '${match.group(1)} ${match.group(2)}';
-        });
-        
-        result = result.replaceAllMapped(RegExp(r'(\w)â(\w)'), (match) {
-          return '${match.group(1)} ${match.group(2)}';
-        });
-        
-        return result;
-      }
-      
-      final spacingFixed = fixSpacing(replacedQuotes);
-      
-      debugPrint('TextProcessingService: Fixed spacing issues, preserving markup');
-      
-      // Remove only control characters but keep HTML and markdown
-      final cleanedText = spacingFixed.replaceAll(
-        RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F]'), 
-        ''
-      );
-      
-      // Replace any remaining instances of the right single quotation mark in contractions
-      final contractionFixed = cleanedText.replaceAllMapped(
-        RegExp(r'(\w+)\u2019(s|t|ve|re|ll|d|m)'),
-        (match) => '${match.group(1)}\'${match.group(2)}'
-      );
-      
-      debugPrint('TextProcessingService: Normalization complete, returning processed text of length ${contractionFixed.length}');
-      return contractionFixed;
+      debugPrint('TextProcessingService: Normalization complete, returning processed text of length ${result.length}');
+      return result;
     } catch (e) {
-      // Log the error but return a best-effort cleaned string
-      // This avoids throwing exceptions for text processing issues
       debugPrint('TextProcessingService: Error normalizing text with markup preservation: $e');
-      
-      debugPrint('TextProcessingService: Using fallback normalization');
-      
-      // More gentle fallback that preserves HTML/markdown
-      final fallbackResult = text
-          .replaceAll('ä', "'")  // Replace problematic character with apostrophe as fallback
-          .replaceAll('â', "'")  // Replace problematic character with apostrophe as fallback
-          .replaceAll('\u2019', "'"); // Replace right single quotation mark
-          
-      debugPrint('TextProcessingService: Fallback normalization complete, returning text of length ${fallbackResult.length}');
-      return fallbackResult;
+      return text; // Return original text if normalization fails
     }
   }
 } 

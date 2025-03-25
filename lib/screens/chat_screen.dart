@@ -976,11 +976,23 @@ Tango: """;
         itemBuilder: (context, index) {
           final role = _messages[index]['role']!;
           final rawText = _messages[index]['content'] ?? "";
-          final text = TextProcessingService.normalizeTextPreserveMarkup(rawText);
+          
+          // Debug: Show character codes
+          String debugText = '';
+          for (int i = 0; i < rawText.length; i++) {
+            final char = rawText[i];
+            final codePoint = rawText.codeUnitAt(i);
+            if (codePoint > 127) {
+              debugText += '[$char:U+${codePoint.toRadixString(16).padLeft(4, '0')}]';
+            } else {
+              debugText += char;
+            }
+          }
+          
           final isUser = (role == 'user');
 
           return ChatMessageBubble(
-            message: text,
+            message: debugText,
             isUser: isUser,
           );
         },

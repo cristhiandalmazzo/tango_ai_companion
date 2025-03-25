@@ -13,6 +13,7 @@ import 'screens/partner_profile_screen.dart';
 import 'screens/settings_screen.dart';
 import 'supabase_config.dart';
 import 'services/theme_service.dart';
+import 'services/text_processing_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,10 +64,31 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tango',
-      theme: ThemeService.lightTheme,
-      darkTheme: ThemeService.darkTheme,
+      title: 'Tango AI Companion',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
+        ),
+      ),
       themeMode: _themeMode,
+      home: FutureBuilder(
+        future: _initializeApp(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          return const LoginScreen();
+        },
+      ),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => HomeScreen(
@@ -156,6 +178,13 @@ class _MyAppState extends State<MyApp> {
         // Fallback to LoginScreen for unknown routes.
         return MaterialPageRoute(builder: (context) => const LoginScreen());
       },
+    );
+  }
+
+  Future<void> _initializeApp() async {
+    await Supabase.initialize(
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
     );
   }
 }
