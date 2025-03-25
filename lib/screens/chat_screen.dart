@@ -10,6 +10,7 @@ import '../widgets/chat_input.dart';
 import '../services/edge_functions_service.dart';
 import '../services/profile_service.dart';
 import '../services/relationship_service.dart';
+import '../services/text_processing_service.dart';
 
 class ChatScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
@@ -214,15 +215,16 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       
       for (final message in sortedMessages) {
         final senderType = message['sender_type'] as String;
-        final text = message['text'] as String;
+        final rawText = message['text'] as String;
+        final normalizedText = TextProcessingService.normalizeTextPreserveMarkup(rawText);
         
         // Only add if a proper role and content
-        if (senderType.isNotEmpty && text.isNotEmpty) {
+        if (senderType.isNotEmpty && normalizedText.isNotEmpty) {
           previousMessages.add({
             'role': senderType,
-            'content': text,
+            'content': normalizedText,
           });
-          debugPrint('ChatScreen: Added message to UI: ${senderType.substring(0, 1)}: ${text.substring(0, min(20, text.length))}...');
+          debugPrint('ChatScreen: Added message to UI: ${senderType.substring(0, 1)}: ${normalizedText.substring(0, min(20, normalizedText.length))}...');
         }
       }
       
@@ -542,8 +544,8 @@ Partner personality traits: $partnerPersonalityText
 
     final prompt = """
 You are Tango, an ai companion specialized in relationships.
-You are talking to a user and their partner. 
-The user's name is $_userName.
+You are talking to a user and their partner, but in separate conversations. 
+You are currently talking to $_userName.
 They have this bio: $_userBio
 They live in $_userLocation. 
 They were born on $_userBirthdate, identified as $_userGender.
@@ -553,7 +555,10 @@ They have these personality traits: $personalityText.
 $partnerProfileText
 $relationshipContext
 For context, here are the previous conversations: $previousConversationsText
-Ensure usage of UTF-8 encoding and not use special characters.
+IMPORTANT: 
+- Your responses must use only standard ASCII apostrophes (') and not fancy or encoded apostrophes (â, ä).
+- Always use standard UTF-8 encoding for all text, especially for contractions like "it's", "that's", etc.
+- You can use markdown formatting in your responses (bold, italic, lists, etc.) as the app supports markdown rendering.
 Tango: """;
 
     debugPrint('ChatScreen: System prompt built, length: ${prompt.length} characters');
@@ -709,6 +714,7 @@ Tango: """;
     }
     
     try {
+      final normalizedContent = TextProcessingService.normalizeTextPreserveMarkup(content);
       debugPrint('ChatScreen: Inserting user message into messages table');
       await Supabase.instance.client
           .from('messages')
@@ -716,7 +722,7 @@ Tango: """;
             'conversation_id': _conversationId,
             'sender_id': _userId,
             'sender_type': 'user',
-            'text': content,
+            'text': normalizedContent,
             'relationship_id': _relationshipId,
           });
       debugPrint("ChatScreen: Stored user message in database");
@@ -734,6 +740,7 @@ Tango: """;
     }
     
     try {
+      final normalizedContent = TextProcessingService.normalizeTextPreserveMarkup(content);
       debugPrint('ChatScreen: Inserting AI message into messages table');
       await Supabase.instance.client
           .from('messages')
@@ -741,7 +748,7 @@ Tango: """;
             'conversation_id': _conversationId,
             'sender_id': null, // AI has no user ID
             'sender_type': 'assistant',
-            'text': content,
+            'text': normalizedContent,
             'relationship_id': _relationshipId,
           });
       debugPrint("ChatScreen: Stored AI message in database");
@@ -772,11 +779,12 @@ Tango: """;
         debugPrint('ChatScreen: Processing ${response.length} previous messages');
         for (final message in response) {
           final senderType = message['sender_type'] as String;
-          final text = message['text'] as String;
+          final rawText = message['text'] as String;
+          final normalizedText = TextProcessingService.normalizeTextPreserveMarkup(rawText);
           
           previousMessages.add({
             'role': senderType,
-            'content': text,
+            'content': normalizedText,
           });
         }
         
@@ -909,7 +917,8 @@ Tango: """;
       physics: const AlwaysScrollableScrollPhysics(),
       itemBuilder: (context, index) {
         final role = _messages[index]['role']!;
-        final text = _messages[index]['content'] ?? "";
+        final rawText = _messages[index]['content'] ?? "";
+        final text = TextProcessingService.normalizeTextPreserveMarkup(rawText);
         final isUser = (role == 'user');
 
         return ChatMessageBubble(
