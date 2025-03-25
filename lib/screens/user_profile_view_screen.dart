@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../widgets/screen_container.dart';
 import '../widgets/app_container.dart';
 import '../services/profile_service.dart';
+import '../widgets/profile_detail_item.dart';
+import '../widgets/user_avatar.dart';
 
 class UserProfileViewScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
@@ -227,6 +229,7 @@ class _UserProfileViewScreenState extends State<UserProfileViewScreen> {
   Widget _buildProfilePicture() {
     final String pictureUrl = _userProfile!['profile_picture_url'] ?? '';
     final String name = _userProfile!['name'] ?? _userProfile!['full_name'] ?? 'Me';
+    final String userId = _userProfile!['id'] ?? '';
     
     // Calculate age from birthdate if available
     String? ageText;
@@ -246,19 +249,11 @@ class _UserProfileViewScreenState extends State<UserProfileViewScreen> {
     
     return Column(
       children: [
-        CircleAvatar(
-          radius: 60,
-          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-          backgroundImage: pictureUrl.isNotEmpty 
-              ? NetworkImage(pictureUrl) 
-              : null,
-          child: pictureUrl.isEmpty 
-              ? Icon(
-                  Icons.person,
-                  size: 60,
-                  color: Theme.of(context).colorScheme.primary,
-                )
-              : null,
+        UserAvatar(
+          userId: userId,
+          imageUrl: pictureUrl,
+          name: name,
+          size: 120,
         ),
         const SizedBox(height: 16),
         Text(
@@ -287,46 +282,11 @@ class _UserProfileViewScreenState extends State<UserProfileViewScreen> {
     required IconData icon,
     int maxLines = 2,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    icon,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : Theme.of(context).textTheme.bodySmall?.color,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.bodyLarge,
-                maxLines: maxLines,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ),
+    return ProfileDetailItem(
+      title: title,
+      value: value,
+      icon: icon,
+      maxLines: maxLines,
     );
   }
   

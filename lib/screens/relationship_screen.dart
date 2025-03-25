@@ -14,6 +14,8 @@ import '../models/note.dart';
 import '../widgets/loading_indicator.dart';
 import '../widgets/user_avatar.dart';
 import './chat_screen.dart'; // Update to direct import
+import '../widgets/error_view.dart';
+import '../widgets/connected_avatars.dart';
 
 class RelationshipScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
@@ -105,41 +107,9 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   }
 
   Widget _buildErrorView() {
-    final l10n = AppLocalizations.of(context)!;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              color: isDarkMode ? Colors.red.shade300 : Colors.red,
-              size: 80,
-            ),
-            const SizedBox(height: 20),
-            Text(
-              l10n.error,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _errorMessage,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _loadRelationshipData,
-              child: Text(l10n.retry),
-            ),
-          ],
-        ),
-      ),
+    return ErrorView(
+      errorMessage: _errorMessage,
+      onRetry: _loadRelationshipData,
     );
   }
 
@@ -175,66 +145,30 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
             const SizedBox(height: 40),
 
             // Partner cards with connection
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                // Connection line
-                Positioned(
-                  child: Container(
-                    height: 4,
-                    width: size.width * 0.4,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          _getColorFromInterests(
-                            _currentUserProfile['interests'],
-                          ),
-                          _getColorFromInterests(_partnerProfile['interests']),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(4),
+            ConnectedAvatars(
+              userProfile: _currentUserProfile,
+              partnerProfile: _partnerProfile,
+              avatarSize: 80.0,
+              lineWidth: 0.4,
+              centerWidget: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 5,
+                      spreadRadius: 1,
                     ),
-                  ),
-                ),
-
-                // Connection heart icon
-                Positioned(
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: isDarkMode ? Colors.grey.shade700 : Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              isDarkMode
-                                  ? Colors.black.withOpacity(0.3)
-                                  : Colors.black.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      _getRelationshipIcon(),
-                      color: _getRelationshipIconColor(),
-                      size: 28,
-                    ),
-                  ),
-                ),
-
-                // Partner cards
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildPartnerCard(_currentUserProfile, true),
-                    const SizedBox(
-                      width: 60,
-                    ), // Space for connection line and heart
-                    _buildPartnerCard(_partnerProfile, false),
                   ],
                 ),
-              ],
+                padding: const EdgeInsets.all(6),
+                child: Icon(
+                  Icons.favorite,
+                  color: Colors.red.shade400,
+                  size: 20,
+                ),
+              ),
             ),
 
             // Re-invite partner button if partner hasn't signed up
@@ -404,10 +338,8 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
         profile['bio'] ??
         'No description for ${isCurrentUser ? 'you' : 'your partner'} has been added yet.';
 
-    // Use profile_picture_url if available, or generate a placeholder
-    final String pictureUrl =
-        profile['profile_picture_url'] ??
-        'https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=random';
+    // Get profile picture URL if available
+    final String pictureUrl = profile['profile_picture_url'] ?? '';
 
     return Expanded(
       child: Card(
@@ -418,12 +350,11 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundImage: NetworkImage(pictureUrl),
-                onBackgroundImageError: (_, __) {
-                  // Fallback for image loading errors
-                },
+              UserAvatar(
+                userId: profile['id'] ?? '',
+                imageUrl: pictureUrl,
+                name: name,
+                size: 80,
               ),
               const SizedBox(height: 12),
               Text(

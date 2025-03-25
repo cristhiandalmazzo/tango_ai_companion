@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../widgets/screen_container.dart';
 import '../widgets/app_container.dart';
+import '../widgets/error_view.dart';
+import '../widgets/profile_detail_item.dart';
+import '../widgets/user_avatar.dart';
 import '../services/profile_service.dart';
 import '../services/relationship_service.dart';
 
@@ -105,33 +108,10 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
     }
     
     if (_errorMessage.isNotEmpty || _partnerProfile == null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 60,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Error Loading Profile',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _errorMessage,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadPartnerProfile,
-              child: const Text('Try Again'),
-            ),
-          ],
-        ),
+      return ErrorView(
+        errorMessage: _errorMessage,
+        onRetry: _loadPartnerProfile,
+        retryText: 'Try Again',
       );
     }
     
@@ -143,7 +123,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
         const SizedBox(height: 24),
         
         // Name
-        _buildProfileDetail(
+        ProfileDetailItem(
           title: 'Name', 
           value: _partnerProfile!['name'] ?? _partnerProfile!['full_name'] ?? 'Not provided',
           icon: Icons.person,
@@ -151,7 +131,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
         
         // Bio
         if (_partnerProfile!['bio'] != null)
-          _buildProfileDetail(
+          ProfileDetailItem(
             title: 'Bio', 
             value: _partnerProfile!['bio'], 
             icon: Icons.description,
@@ -160,7 +140,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
           
         // Location
         if (_partnerProfile!['location'] != null)
-          _buildProfileDetail(
+          ProfileDetailItem(
             title: 'Location', 
             value: _partnerProfile!['location'], 
             icon: Icons.location_on,
@@ -168,7 +148,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
           
         // Occupation
         if (_partnerProfile!['occupation'] != null)
-          _buildProfileDetail(
+          ProfileDetailItem(
             title: 'Occupation', 
             value: _partnerProfile!['occupation'], 
             icon: Icons.work,
@@ -176,7 +156,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
         
         // Education
         if (_partnerProfile!['education'] != null)
-          _buildProfileDetail(
+          ProfileDetailItem(
             title: 'Education', 
             value: _partnerProfile!['education'], 
             icon: Icons.school,
@@ -184,7 +164,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
         
         // Gender
         if (_partnerProfile!['gender'] != null)
-          _buildProfileDetail(
+          ProfileDetailItem(
             title: 'Gender', 
             value: _partnerProfile!['gender'], 
             icon: Icons.person_outline,
@@ -192,7 +172,7 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
         
         // Age
         if (_partnerProfile!['birthdate'] != null)
-          _buildProfileDetail(
+          ProfileDetailItem(
             title: 'Age', 
             value: _calculateAge(_partnerProfile!['birthdate']), 
             icon: Icons.cake,
@@ -227,38 +207,15 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
   Widget _buildProfilePicture() {
     final String pictureUrl = _partnerProfile!['profile_picture_url'] ?? '';
     final String name = _partnerProfile!['name'] ?? _partnerProfile!['full_name'] ?? 'Partner';
-    
-    // Calculate age from birthdate if available
-    String? ageText;
-    if (_partnerProfile!['birthdate'] != null) {
-      final birthdate = DateTime.tryParse(_partnerProfile!['birthdate']);
-      if (birthdate != null) {
-        final now = DateTime.now();
-        int age = now.year - birthdate.year;
-        // Adjust age if birthday hasn't occurred yet this year
-        if (now.month < birthdate.month || 
-            (now.month == birthdate.month && now.day < birthdate.day)) {
-          age--;
-        }
-        ageText = '$age years old';
-      }
-    }
+    final String userId = _partnerProfile!['id'] ?? '';
     
     return Column(
       children: [
-        CircleAvatar(
-          radius: 60,
-          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-          backgroundImage: pictureUrl.isNotEmpty 
-              ? NetworkImage(pictureUrl) 
-              : null,
-          child: pictureUrl.isEmpty 
-              ? Icon(
-                  Icons.person,
-                  size: 60,
-                  color: Theme.of(context).colorScheme.primary,
-                )
-              : null,
+        UserAvatar(
+          userId: userId,
+          imageUrl: pictureUrl,
+          name: name,
+          size: 120,
         ),
         const SizedBox(height: 16),
         Text(
@@ -267,65 +224,17 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        if (ageText != null)
+        if (_partnerProfile!['birthdate'] != null)
           Padding(
             padding: const EdgeInsets.only(top: 4.0),
             child: Text(
-              ageText,
+              _calculateAge(_partnerProfile!['birthdate']),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
             ),
           ),
       ],
-    );
-  }
-  
-  Widget _buildProfileDetail({
-    required String title,
-    required String value,
-    required IconData icon,
-    int maxLines = 2,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    icon,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.bodyLarge,
-                maxLines: maxLines,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
   

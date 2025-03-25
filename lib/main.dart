@@ -81,9 +81,13 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
     
-    // Sync app language with user profile when user is logged in
+    // Check if the current route is a signup route to avoid redirecting
+    final currentRoute = ModalRoute.of(context)?.settings.name ?? '';
+    final isSignupRoute = currentRoute.contains('signup');
+    
+    // Only sync language with user profile when user is logged in and not on signup route
     final user = Supabase.instance.client.auth.currentUser;
-    if (user != null) {
+    if (user != null && !isSignupRoute) {
       // Use Future.microtask to avoid calling setState during build
       Future.microtask(() => languageProvider.syncWithUserProfile());
     }
@@ -147,6 +151,33 @@ class _MyAppState extends State<MyApp> {
                 ),
               );
             }
+            
+            // Check if we're on a signup route (with relationshipId) before redirecting
+            final currentUri = Uri.base.toString();
+            final isSignupRoute = currentUri.contains('signup') || 
+                                  (Uri.parse(currentUri).queryParameters.containsKey('relationshipId') && 
+                                   Uri.parse(currentUri).queryParameters['relationshipId']?.isNotEmpty == true);
+            
+            if (isSignupRoute) {
+              // Parse the relationship ID and navigate to signup screen
+              String? relationshipId;
+              try {
+                final uri = Uri.parse(Uri.base.toString());
+                relationshipId = uri.queryParameters['relationshipId'];
+                if (kDebugMode) {
+                  print("Redirecting to signup with relationshipId: $relationshipId");
+                }
+              } catch (e) {
+                debugPrint('Error parsing relationshipId: $e');
+              }
+              
+              return SignUpScreen(
+                relationshipId: relationshipId,
+                currentThemeMode: _themeMode,
+                onThemeChanged: _changeTheme,
+              );
+            }
+            
             return const LoginScreen();
           },
         ),
@@ -248,5 +279,17 @@ class _MyAppState extends State<MyApp> {
     // Supabase is already initialized in the main() function
     // This was causing the "This instance is already initialized" error
     debugPrint('_initializeApp: Initialization complete');
+  }
+  
+  // Check if the current URL contains 'signup' parameter for navigation decisions
+  bool isSignupRoute() {
+    if (kIsWeb) {
+      final uri = Uri.parse(Uri.base.toString());
+      return uri.path.contains('signup') || 
+             uri.toString().contains('signup') || 
+             (uri.queryParameters.containsKey('relationshipId') && 
+              uri.queryParameters['relationshipId']?.isNotEmpty == true);
+    }
+    return false;
   }
 }

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/screen_container.dart';
 import '../widgets/app_container.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/connected_avatars.dart';
+import '../services/profile_service.dart';
+import '../services/relationship_service.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
   final Function(ThemeMode) onThemeChanged;
 
@@ -14,13 +19,60 @@ class HomeScreen extends StatelessWidget {
   });
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _isLoading = true;
+  Map<String, dynamic> _userProfile = {};
+  Map<String, dynamic> _partnerProfile = {};
+  Map<String, dynamic> _relationshipData = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Load user profile
+      final userData = await ProfileService.fetchProfile();
+      _userProfile = userData;
+
+      // Load relationship data and partner profile
+      final relationshipData = await RelationshipService.fetchRelationshipData();
+      _relationshipData = relationshipData;
+
+      // Determine which profile is the current user and which is the partner
+      final currentUserId = relationshipData['current_user_id'];
+      if (relationshipData['partner_a']?['id'] == currentUserId) {
+        _partnerProfile = relationshipData['partner_b'] ?? {};
+      } else {
+        _partnerProfile = relationshipData['partner_a'] ?? {};
+      }
+    } catch (e) {
+      // Handle errors
+      debugPrint('Error loading data: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     
     return ScreenContainer(
       title: l10n.appTitle,
-      currentThemeMode: currentThemeMode,
-      onThemeChanged: onThemeChanged,
+      currentThemeMode: widget.currentThemeMode,
+      onThemeChanged: widget.onThemeChanged,
       body: SingleChildScrollView(
         child: AppContainer(
           child: Column(
@@ -28,11 +80,89 @@ class HomeScreen extends StatelessWidget {
             children: [
               _buildWelcomeCard(context),
               const SizedBox(height: 24),
+              if (!_isLoading && _partnerProfile.isNotEmpty)
+                _buildRelationshipSection(context),
+              const SizedBox(height: 24),
               _buildFeatureSection(context),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildRelationshipSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.relationship,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: isDarkMode ? Colors.white : Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Card(
+          elevation: 2,
+          color: isDarkMode ? const Color(0xFF2A2A2A) : null,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                ConnectedAvatars(
+                  userProfile: _userProfile,
+                  partnerProfile: _partnerProfile,
+                  avatarSize: 60.0,
+                  centerWidget: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 5,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(
+                      Icons.favorite,
+                      color: Colors.red.shade400,
+                      size: 16,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _relationshipData['relationship']?['name'] ?? l10n.viewAndStrengthen,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                CustomButton(
+                  text: l10n.relationship,
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/relationship');
+                  },
+                  icon: Icons.favorite_border,
+                  isOutlined: true,
+                  width: double.infinity,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -81,36 +211,14 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          ElevatedButton(
+          CustomButton(
+            text: l10n.chat,
             onPressed: () {
               Navigator.pushNamed(context, '/ai_chat');
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Theme.of(context).primaryColor,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.chat_bubble_outline,
-                  color: Theme.of(context).primaryColor,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.chat,
-                  style: TextStyle(
-                    color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
+            icon: Icons.chat_bubble_outline,
+            backgroundColor: Colors.white,
+            textColor: Theme.of(context).primaryColor,
           ),
         ],
       ),
