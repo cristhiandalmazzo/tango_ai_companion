@@ -16,6 +16,10 @@ import '../widgets/user_avatar.dart';
 import './chat_screen.dart'; // Update to direct import
 import '../widgets/error_view.dart';
 import '../widgets/connected_avatars.dart';
+import '../extensions/theme_extension.dart';
+import '../utils/style_constants.dart';
+import '../utils/navigation_utils.dart';
+import '../utils/error_utils.dart';
 
 class RelationshipScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
@@ -83,9 +87,10 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
         _isLoading = false;
       });
     } catch (e) {
+      ErrorUtils.logError('RelationshipScreen._loadRelationshipData', e);
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Could not load relationship data: ${e.toString()}';
+        _errorMessage = ErrorUtils.getUserFriendlyMessage(e);
       });
     }
   }
@@ -107,7 +112,8 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   }
 
   Widget _buildErrorView() {
-    return ErrorView(
+    return ErrorUtils.buildErrorWidget(
+      context: context,
       errorMessage: _errorMessage,
       onRetry: _loadRelationshipData,
     );
@@ -116,33 +122,30 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   Widget _buildRelationshipView() {
     final l10n = AppLocalizations.of(context)!;
     final size = MediaQuery.of(context).size;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return SingleChildScrollView(
       child: AppContainer(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 20),
+            SizedBox(height: StyleConstants.spacingL),
             Text(
               l10n.relationship,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: context.theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: StyleConstants.spacingXS),
             Text(
               _relationshipData['relationship']?['name'] ??
                   l10n.viewAndStrengthen,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color:
-                    isDarkMode
-                        ? Colors
-                            .white70 // Light gray for dark mode
-                        : Theme.of(context).textTheme.bodySmall?.color,
+              style: context.theme.textTheme.bodyLarge?.copyWith(
+                color: context.textSecondaryColor,
               ),
             ),
-            const SizedBox(height: 40),
+            SizedBox(
+              height: StyleConstants.spacingXL + StyleConstants.spacingS,
+            ),
 
             // Partner cards with connection
             ConnectedAvatars(
@@ -162,7 +165,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                     ),
                   ],
                 ),
-                padding: const EdgeInsets.all(6),
+                padding: EdgeInsets.all(StyleConstants.spacingXS + 2),
                 child: Icon(
                   Icons.favorite,
                   color: Colors.red.shade400,
@@ -173,7 +176,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
 
             // Re-invite partner button if partner hasn't signed up
             if (!_isPartnerSignedUp()) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: StyleConstants.spacingM),
               ElevatedButton.icon(
                 onPressed: _showReInviteDialog,
                 icon: const Icon(Icons.person_add),
@@ -181,42 +184,44 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor:
-                      isDarkMode
+                      context.isDarkMode
                           ? Colors.grey.shade700
-                          : Theme.of(context).colorScheme.secondary,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
+                          : context.theme.colorScheme.secondary,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: StyleConstants.spacingL,
+                    vertical: StyleConstants.spacingM - 4,
                   ),
                 ),
               ),
             ],
 
-            const SizedBox(height: 40),
+            SizedBox(
+              height: StyleConstants.spacingXL + StyleConstants.spacingS,
+            ),
 
             // Relationship strength meter
             _buildStrengthMeter(),
 
-            const SizedBox(height: 30),
+            SizedBox(height: StyleConstants.spacingL + StyleConstants.spacingS),
 
             // Anniversary date
             _buildAnniversarySection(),
 
-            const SizedBox(height: 30),
+            SizedBox(height: StyleConstants.spacingL + StyleConstants.spacingS),
 
             // Relationship status
             _buildRelationshipStatusSection(),
 
-            const SizedBox(height: 30),
+            SizedBox(height: StyleConstants.spacingL + StyleConstants.spacingS),
 
             // Relationship insights card
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(StyleConstants.radiusL),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(StyleConstants.spacingM),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -225,36 +230,28 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                         Icon(
                           Icons.lightbulb_outline,
                           color:
-                              isDarkMode ? Colors.amber.shade300 : Colors.amber,
+                              context.isDarkMode
+                                  ? Colors.amber.shade300
+                                  : Colors.amber,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: StyleConstants.spacingS),
                         Text(
                           l10n.relationshipInsights,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.titleMedium?.copyWith(
+                          style: context.theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color:
-                                isDarkMode
-                                    ? Colors.grey.shade400
-                                    : Theme.of(
-                                      context,
-                                    ).textTheme.bodySmall?.color,
+                            color: context.textSecondaryColor,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: StyleConstants.spacingM),
                     Text(
                       _metrics['insight'] ?? l10n.communicationImproving,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color:
-                            isDarkMode
-                                ? Colors.grey.shade400
-                                : Theme.of(context).textTheme.bodySmall?.color,
+                      style: context.theme.textTheme.bodyMedium?.copyWith(
+                        color: context.textSecondaryColor,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: StyleConstants.spacingM),
                     Row(
                       children: [
                         Expanded(
@@ -263,7 +260,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                             _metrics['communication'] ?? 70,
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: StyleConstants.spacingM),
                         Expanded(
                           child: _buildInsightMetric(
                             l10n.understanding,
@@ -272,16 +269,19 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: StyleConstants.spacingM),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/ai_chat');
+                        NavigationUtils.replace(context, '/ai_chat');
                       },
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(
+                            StyleConstants.radiusS,
+                          ),
                         ),
-                        foregroundColor: isDarkMode ? Colors.white : null,
+                        foregroundColor:
+                            context.isDarkMode ? Colors.white : null,
                       ),
                       child: Text(l10n.strengthenWithAiChat),
                     ),
@@ -290,12 +290,12 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            SizedBox(height: StyleConstants.spacingL),
 
             // Notes section
             _buildNotesSection(),
 
-            const SizedBox(height: 20),
+            SizedBox(height: StyleConstants.spacingL),
 
             // Common interests section
             if (_getCommonInterests().isNotEmpty)
@@ -308,7 +308,6 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
 
   Widget _buildPartnerCard(Map<String, dynamic> profile, bool isCurrentUser) {
     final l10n = AppLocalizations.of(context)!;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final String name =
         profile['full_name'] ??
         profile['username'] ??
@@ -331,6 +330,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
         }
       } catch (e) {
         // Handle date parsing error
+        ErrorUtils.logError('RelationshipScreen._buildPartnerCard', e);
       }
     }
 
@@ -344,9 +344,11 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
     return Expanded(
       child: Card(
         elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(StyleConstants.radiusL),
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(StyleConstants.spacingM),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -356,48 +358,42 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                 name: name,
                 size: 80,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: StyleConstants.spacingM - 4),
               Text(
                 isCurrentUser ? l10n.you : name,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color:
-                      isDarkMode
-                          ? Colors.grey.shade400
-                          : Theme.of(context).textTheme.bodySmall?.color,
+                style: context.theme.textTheme.titleLarge?.copyWith(
+                  color: context.textPrimaryColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               if (age != null)
                 Text(
                   '$age years',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color:
-                        isDarkMode
-                            ? Colors.grey.shade400
-                            : Theme.of(context).textTheme.bodySmall?.color,
+                  style: context.theme.textTheme.bodyMedium?.copyWith(
+                    color: context.textSecondaryColor,
                   ),
                 ),
-              const SizedBox(height: 12),
+              SizedBox(height: StyleConstants.spacingM - 4),
               Text(
                 description,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: context.theme.textTheme.bodyMedium,
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: StyleConstants.spacingM - 4),
               OutlinedButton(
                 onPressed: () {
-                  Navigator.pushReplacementNamed(
+                  NavigationUtils.replace(
                     context,
                     isCurrentUser ? '/profile' : '/partner_profile',
                   );
                 },
                 style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(StyleConstants.radiusS),
                   ),
-                  foregroundColor: isDarkMode ? Colors.white : null,
+                  foregroundColor: context.isDarkMode ? Colors.white : null,
                 ),
                 child: Text(l10n.viewProfile),
               ),
@@ -410,7 +406,6 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
 
   Widget _buildStrengthMeter() {
     final l10n = AppLocalizations.of(context)!;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     Color strengthColor;
     String strengthLabel;
 
@@ -435,48 +430,47 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
           children: [
             Text(
               l10n.relationshipStrength,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color:
-                    isDarkMode
-                        ? Colors.grey.shade400
-                        : Theme.of(context).textTheme.bodySmall?.color,
+              style: context.theme.textTheme.titleMedium?.copyWith(
+                color: context.textSecondaryColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
               '$_strengthPercentage%',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: context.theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: strengthColor,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: StyleConstants.spacingS),
         ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(StyleConstants.radiusS),
           child: LinearProgressIndicator(
             value: _strengthPercentage / 100,
             minHeight: 10,
             backgroundColor:
-                isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300,
+                context.isDarkMode
+                    ? Colors.grey.shade800
+                    : Colors.grey.shade300,
             valueColor: AlwaysStoppedAnimation<Color>(strengthColor),
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: StyleConstants.spacingS),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               l10n.needsWork,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: isDarkMode ? Colors.grey.shade400 : null,
+              style: context.theme.textTheme.bodySmall?.copyWith(
+                color: context.isDarkMode ? Colors.grey.shade400 : null,
               ),
             ),
             Text(
               l10n.excellent,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: isDarkMode ? Colors.grey.shade400 : null,
+              style: context.theme.textTheme.bodySmall?.copyWith(
+                color: context.isDarkMode ? Colors.grey.shade400 : null,
               ),
             ),
           ],
@@ -486,7 +480,6 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   }
 
   Widget _buildInsightMetric(String title, int value) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     Color metricColor;
 
     if (value >= 80) {
@@ -504,18 +497,20 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
       children: [
         Text(
           title,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+          style: context.theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: StyleConstants.spacingXS),
         ClipRRect(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(StyleConstants.radiusS / 2),
           child: LinearProgressIndicator(
             value: value / 100,
             minHeight: 6,
             backgroundColor:
-                isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300,
+                context.isDarkMode
+                    ? Colors.grey.shade800
+                    : Colors.grey.shade300,
             valueColor: AlwaysStoppedAnimation<Color>(metricColor),
           ),
         ),
@@ -526,7 +521,6 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   Widget _buildAnniversarySection() {
     // Get anniversary date from relationship data
     DateTime? anniversaryDate;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     if (_relationshipData['relationship']?['start_date'] != null) {
       try {
@@ -535,6 +529,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
         );
       } catch (e) {
         // Handle date parsing error
+        ErrorUtils.logError('RelationshipScreen._buildAnniversarySection', e);
       }
     }
 
@@ -546,9 +541,11 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
 
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(StyleConstants.radiusL),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(StyleConstants.spacingM),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -560,18 +557,15 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                     Icon(
                       Icons.calendar_today,
                       color:
-                          isDarkMode
+                          context.isDarkMode
                               ? Colors.lightBlueAccent
-                              : Theme.of(context).colorScheme.primary,
+                              : context.primaryColor,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: StyleConstants.spacingS),
                     Text(
                       'Anniversary Date',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color:
-                            isDarkMode
-                                ? Colors.grey.shade400
-                                : Theme.of(context).textTheme.bodySmall?.color,
+                      style: context.theme.textTheme.titleMedium?.copyWith(
+                        color: context.textSecondaryColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -580,21 +574,21 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                 IconButton(
                   icon: Icon(
                     Icons.edit,
-                    color: isDarkMode ? Colors.white70 : null,
+                    color: context.isDarkMode ? Colors.white70 : null,
                   ),
                   onPressed: () => _showDatePickerDialog(anniversaryDate),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(formattedDate, style: Theme.of(context).textTheme.bodyLarge),
+            SizedBox(height: StyleConstants.spacingM - 4),
+            Text(formattedDate, style: context.theme.textTheme.bodyLarge),
             if (anniversaryDate != null) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: StyleConstants.spacingS),
               Text(
                 _getAnniversaryMessage(anniversaryDate),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                style: context.theme.textTheme.bodyMedium?.copyWith(
                   fontStyle: FontStyle.italic,
-                  color: isDarkMode ? Colors.white70 : null,
+                  color: context.isDarkMode ? Colors.white70 : null,
                 ),
               ),
             ],
@@ -632,7 +626,6 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
 
   Future<void> _showDatePickerDialog(DateTime? initialDate) async {
     final now = DateTime.now();
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     final DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -641,19 +634,19 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
       lastDate: now,
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
+          data: context.theme.copyWith(
             colorScheme:
-                isDarkMode
+                context.isDarkMode
                     ? ColorScheme.dark(
-                      primary: Theme.of(context).colorScheme.primary,
-                      onPrimary: Theme.of(context).colorScheme.onPrimary,
-                      onSurface: Theme.of(context).colorScheme.onSurface,
-                      surface: Theme.of(context).colorScheme.surface,
+                      primary: context.primaryColor,
+                      onPrimary: context.theme.colorScheme.onPrimary,
+                      onSurface: context.theme.colorScheme.onSurface,
+                      surface: context.theme.colorScheme.surface,
                     )
                     : ColorScheme.light(
-                      primary: Theme.of(context).colorScheme.primary,
-                      onPrimary: Theme.of(context).colorScheme.onPrimary,
-                      onSurface: Theme.of(context).colorScheme.onSurface,
+                      primary: context.primaryColor,
+                      onPrimary: context.theme.colorScheme.onPrimary,
+                      onSurface: context.theme.colorScheme.onSurface,
                     ),
           ),
           child: child!,
@@ -667,6 +660,8 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   }
 
   Future<void> _saveAnniversaryDate(DateTime date) async {
+    final l10n = AppLocalizations.of(context)!;
+
     try {
       setState(() {
         _isLoading = true;
@@ -677,9 +672,9 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
       });
 
       if (result) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Anniversary date updated!')),
-        );
+        if (mounted) {
+          ErrorUtils.showErrorSnackBar(context, 'Anniversary date updated!');
+        }
 
         // Refresh relationship data
         await _loadRelationshipData();
@@ -687,9 +682,13 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
         throw Exception('Failed to update anniversary date');
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+      ErrorUtils.logError('RelationshipScreen._saveAnniversaryDate', e);
+      if (mounted) {
+        ErrorUtils.showErrorSnackBar(
+          context,
+          ErrorUtils.getUserFriendlyMessage(e),
+        );
+      }
       setState(() {
         _isLoading = false;
       });
@@ -699,7 +698,6 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   Widget _buildNotesSection() {
     // Get notes from the additional_data column
     List<Map<String, dynamic>> notes = [];
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     if (_relationshipData['relationship']?['additional_data'] != null) {
       try {
@@ -710,14 +708,17 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
         }
       } catch (e) {
         // Handle parsing error
+        ErrorUtils.logError('RelationshipScreen._buildNotesSection', e);
       }
     }
 
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(StyleConstants.radiusL),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(StyleConstants.spacingM),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -729,18 +730,15 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                     Icon(
                       Icons.note_alt,
                       color:
-                          isDarkMode
+                          context.isDarkMode
                               ? Colors.lightBlueAccent
-                              : Theme.of(context).colorScheme.primary,
+                              : context.primaryColor,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: StyleConstants.spacingS),
                     Text(
                       'Relationship Notes',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color:
-                            isDarkMode
-                                ? Colors.grey.shade400
-                                : Theme.of(context).textTheme.bodySmall?.color,
+                      style: context.theme.textTheme.titleMedium?.copyWith(
+                        color: context.textSecondaryColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -749,19 +747,19 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                 IconButton(
                   icon: Icon(
                     Icons.add,
-                    color: isDarkMode ? Colors.white70 : null,
+                    color: context.isDarkMode ? Colors.white70 : null,
                   ),
                   onPressed: _showAddNoteDialog,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: StyleConstants.spacingM - 4),
             if (notes.isEmpty)
               Text(
                 'No notes yet. Tap the + button to add your first note.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                style: context.theme.textTheme.bodyMedium?.copyWith(
                   fontStyle: FontStyle.italic,
-                  color: isDarkMode ? Colors.white70 : null,
+                  color: context.isDarkMode ? Colors.white70 : null,
                 ),
               )
             else
@@ -779,7 +777,9 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                           : '';
 
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    padding: EdgeInsets.symmetric(
+                      vertical: StyleConstants.spacingS,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -788,14 +788,15 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                           children: [
                             Text(
                               note['title'] ?? 'Note',
-                              style: Theme.of(context).textTheme.titleSmall
+                              style: context.theme.textTheme.titleSmall
                                   ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             IconButton(
                               icon: Icon(
                                 Icons.delete,
                                 size: 18,
-                                color: isDarkMode ? Colors.white70 : null,
+                                color:
+                                    context.isDarkMode ? Colors.white70 : null,
                               ),
                               onPressed: () => _deleteNote(index),
                               padding: EdgeInsets.zero,
@@ -803,17 +804,18 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: StyleConstants.spacingXS),
                         Text(note['content'] ?? ''),
-                        const SizedBox(height: 4),
+                        SizedBox(height: StyleConstants.spacingXS),
                         if (formattedDate.isNotEmpty)
                           Text(
                             'Added on $formattedDate',
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodySmall?.copyWith(
+                            style: context.theme.textTheme.bodySmall?.copyWith(
                               fontStyle: FontStyle.italic,
-                              color: isDarkMode ? Colors.grey.shade400 : null,
+                              color:
+                                  context.isDarkMode
+                                      ? Colors.grey.shade400
+                                      : null,
                             ),
                           ),
                       ],
@@ -830,13 +832,19 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   Future<void> _showAddNoteDialog() async {
     final titleController = TextEditingController();
     final contentController = TextEditingController();
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     await showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Add New Note'),
+            title: Text(
+              'Add New Note',
+              style: TextStyle(
+                color: context.textPrimaryColor,
+                fontWeight: FontWeight.bold,
+                fontSize: StyleConstants.fontSizeL,
+              ),
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -846,24 +854,24 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                     labelText: 'Title',
                     hintText: 'Enter a title for your note',
                     labelStyle: TextStyle(
-                      color: isDarkMode ? Colors.grey.shade300 : null,
+                      color: context.isDarkMode ? Colors.grey.shade300 : null,
                     ),
                     hintStyle: TextStyle(
-                      color: isDarkMode ? Colors.grey.shade400 : null,
+                      color: context.isDarkMode ? Colors.grey.shade400 : null,
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: StyleConstants.spacingM),
                 TextField(
                   controller: contentController,
                   decoration: InputDecoration(
                     labelText: 'Content',
                     hintText: 'Write your note here',
                     labelStyle: TextStyle(
-                      color: isDarkMode ? Colors.grey.shade300 : null,
+                      color: context.isDarkMode ? Colors.grey.shade300 : null,
                     ),
                     hintStyle: TextStyle(
-                      color: isDarkMode ? Colors.grey.shade400 : null,
+                      color: context.isDarkMode ? Colors.grey.shade400 : null,
                     ),
                   ),
                   maxLines: 5,
@@ -872,16 +880,18 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => NavigationUtils.goBack(context),
                 child: Text(
                   'Cancel',
-                  style: TextStyle(color: isDarkMode ? Colors.white : null),
+                  style: TextStyle(
+                    color: context.isDarkMode ? Colors.white : null,
+                  ),
                 ),
               ),
               ElevatedButton(
                 onPressed: () {
                   if (contentController.text.trim().isNotEmpty) {
-                    Navigator.pop(context);
+                    NavigationUtils.goBack(context);
                     _saveNote(
                       titleController.text.trim().isEmpty
                           ? 'Note'
@@ -891,7 +901,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: isDarkMode ? Colors.white : null,
+                  foregroundColor: context.isDarkMode ? Colors.white : null,
                 ),
                 child: const Text('Save'),
               ),
@@ -936,9 +946,9 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
       });
 
       if (result) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Note added successfully!')),
-        );
+        if (mounted) {
+          ErrorUtils.showErrorSnackBar(context, 'Note added successfully!');
+        }
 
         // Refresh relationship data
         await _loadRelationshipData();
@@ -946,9 +956,13 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
         throw Exception('Failed to add note');
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+      ErrorUtils.logError('RelationshipScreen._saveNote', e);
+      if (mounted) {
+        ErrorUtils.showErrorSnackBar(
+          context,
+          ErrorUtils.getUserFriendlyMessage(e),
+        );
+      }
       setState(() {
         _isLoading = false;
       });
@@ -984,9 +998,12 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
           });
 
           if (result) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Note deleted successfully!')),
-            );
+            if (mounted) {
+              ErrorUtils.showErrorSnackBar(
+                context,
+                'Note deleted successfully!',
+              );
+            }
 
             // Refresh relationship data
             await _loadRelationshipData();
@@ -996,9 +1013,13 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+      ErrorUtils.logError('RelationshipScreen._deleteNote', e);
+      if (mounted) {
+        ErrorUtils.showErrorSnackBar(
+          context,
+          ErrorUtils.getUserFriendlyMessage(e),
+        );
+      }
       setState(() {
         _isLoading = false;
       });
@@ -1007,13 +1028,14 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
 
   Widget _buildCommonInterestsSection() {
     final commonInterests = _getCommonInterests();
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(StyleConstants.radiusL),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(StyleConstants.spacingM),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1022,21 +1044,23 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                 Icon(
                   Icons.favorite_border,
                   color:
-                      isDarkMode ? Colors.pink.shade300 : Colors.red.shade400,
+                      context.isDarkMode
+                          ? Colors.pink.shade300
+                          : Colors.red.shade400,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: StyleConstants.spacingS),
                 Text(
                   'Common Interests',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: context.theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: StyleConstants.spacingM - 4),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: StyleConstants.spacingS,
+              runSpacing: StyleConstants.spacingS,
               children:
                   commonInterests
                       .map(
@@ -1045,15 +1069,16 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                             interest,
                             style: TextStyle(
                               color:
-                                  isDarkMode
+                                  context.isDarkMode
                                       ? Colors.white
-                                      : Theme.of(
-                                        context,
-                                      ).colorScheme.onPrimaryContainer,
+                                      : context
+                                          .theme
+                                          .colorScheme
+                                          .onPrimaryContainer,
                             ),
                           ),
                           backgroundColor:
-                              Theme.of(context).colorScheme.primaryContainer,
+                              context.theme.colorScheme.primaryContainer,
                         ),
                       )
                       .toList(),
@@ -1137,18 +1162,9 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
 
   // Show a snackbar message with retry option
   void _showErrorSnackBar() {
-    if (_errorMessage.isNotEmpty) {
+    if (_errorMessage.isNotEmpty && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_errorMessage),
-            duration: const Duration(seconds: 5),
-            action: SnackBarAction(
-              label: 'Retry',
-              onPressed: _loadRelationshipData,
-            ),
-          ),
-        );
+        ErrorUtils.showErrorSnackBar(context, _errorMessage);
       });
     }
   }
@@ -1168,12 +1184,9 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   // Show re-invite dialog
   Future<void> _showReInviteDialog() async {
     final relationshipId = _relationshipData['relationship']?['id'];
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     if (relationshipId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Relationship ID not found.')),
-      );
+      ErrorUtils.showErrorSnackBar(context, 'Relationship ID not found.');
       return;
     }
 
@@ -1194,21 +1207,21 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                 const Text(
                   "Your partner hasn't signed up yet. Share this link with them to join:",
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: StyleConstants.spacingM - 4),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(StyleConstants.spacingM - 4),
                   decoration: BoxDecoration(
                     color:
-                        isDarkMode
+                        context.isDarkMode
                             ? const Color(0xFF3A3A3A)
                             : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(StyleConstants.radiusS),
                   ),
                   child: SelectableText(
                     inviteUrl,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
-                      color: Theme.of(context).primaryColor,
+                      color: context.primaryColor,
                     ),
                   ),
                 ),
@@ -1218,16 +1231,17 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
               TextButton(
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: inviteUrl));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Invitation URL copied to clipboard."),
-                    ),
-                  );
+                  if (mounted) {
+                    ErrorUtils.showErrorSnackBar(
+                      context,
+                      "Invitation URL copied to clipboard.",
+                    );
+                  }
                 },
                 child: const Text("Copy URL"),
               ),
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => NavigationUtils.goBack(context),
                 child: const Text("Close"),
               ),
             ],
@@ -1238,7 +1252,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   Widget _buildRelationshipStatusSection() {
     final relationship = _relationshipData['relationship'] ?? {};
     final currentStatus = relationship['status'] ?? 'undefined';
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     final statusOptions = {
       'undefined': 'Not Set',
@@ -1253,23 +1267,20 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
       children: [
         Text(
           'Relationship Status',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          style: context.theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            color:
-                isDarkMode
-                    ? Colors.grey.shade400
-                    : Theme.of(context).textTheme.bodySmall?.color,
+            color: context.textSecondaryColor,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: StyleConstants.spacingM),
 
         Container(
           decoration: BoxDecoration(
             color:
-                isDarkMode
+                context.isDarkMode
                     ? const Color(0xFF3A3A3A)
-                    : Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(12),
+                    : context.theme.cardColor,
+            borderRadius: BorderRadius.circular(StyleConstants.radiusM),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
@@ -1278,23 +1289,24 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
               ),
             ],
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          padding: EdgeInsets.symmetric(
+            horizontal: StyleConstants.spacingL,
+            vertical: StyleConstants.spacingM - 1,
+          ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: currentStatus,
               isExpanded: true,
               icon: Icon(
                 Icons.arrow_drop_down,
-                color: isDarkMode ? Colors.white : null,
+                color: context.isDarkMode ? Colors.white : null,
               ),
               elevation: 16,
-              dropdownColor: isDarkMode ? const Color(0xFF2A2A2A) : null,
+              dropdownColor:
+                  context.isDarkMode ? const Color(0xFF2A2A2A) : null,
               style: TextStyle(
-                color:
-                    isDarkMode
-                        ? Colors.white
-                        : Theme.of(context).textTheme.bodyLarge?.color,
-                fontSize: 16,
+                color: context.textPrimaryColor,
+                fontSize: StyleConstants.fontSizeM,
               ),
               onChanged: (String? newStatus) {
                 if (newStatus != null && newStatus != currentStatus) {
@@ -1330,9 +1342,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
         await _loadRelationshipData();
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Relationship status updated')),
-          );
+          ErrorUtils.showErrorSnackBar(context, 'Relationship status updated');
         }
       }
     } catch (e) {
@@ -1341,11 +1351,10 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error updating status: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        ErrorUtils.logError('RelationshipScreen._updateRelationshipStatus', e);
+        ErrorUtils.showErrorSnackBar(
+          context,
+          ErrorUtils.getUserFriendlyMessage(e),
         );
       }
     }
