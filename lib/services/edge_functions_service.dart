@@ -42,7 +42,30 @@ class EdgeFunctionsService {
         debugPrint('EdgeFunctionsService: Successfully received response');
         
         final data = jsonDecode(response.body);
-        final rawText = data['choices'][0]['message']['content'].trim();
+        debugPrint('EdgeFunctionsService: Response data: ${response.body}');
+        
+        // Check if the expected data structure exists
+        if (data == null) {
+          throw Exception('Response data is null');
+        }
+        
+        if (!data.containsKey('choices') || 
+            data['choices'] == null || 
+            data['choices'].isEmpty) {
+          throw Exception('Response missing choices field: ${response.body}');
+        }
+        
+        final choice = data['choices'][0];
+        if (choice == null || !choice.containsKey('message') || choice['message'] == null) {
+          throw Exception('Response missing message field: ${response.body}');
+        }
+        
+        final message = choice['message'];
+        if (!message.containsKey('content') || message['content'] == null) {
+          throw Exception('Response missing content field: ${response.body}');
+        }
+        
+        final rawText = message['content'].trim();
         
         debugPrint('EdgeFunctionsService: Response length: ${rawText.length} characters');
         
@@ -105,7 +128,30 @@ class EdgeFunctionsService {
         debugPrint('EdgeFunctionsService: Successfully received response');
         
         final data = jsonDecode(response.body);
-        final rawText = data['choices'][0]['message']['content'].trim();
+        debugPrint('EdgeFunctionsService: Response data: ${response.body}');
+        
+        // Check if the expected data structure exists
+        if (data == null) {
+          throw Exception('Response data is null');
+        }
+        
+        if (!data.containsKey('choices') || 
+            data['choices'] == null || 
+            data['choices'].isEmpty) {
+          throw Exception('Response missing choices field: ${response.body}');
+        }
+        
+        final choice = data['choices'][0];
+        if (choice == null || !choice.containsKey('message') || choice['message'] == null) {
+          throw Exception('Response missing message field: ${response.body}');
+        }
+        
+        final message = choice['message'];
+        if (!message.containsKey('content') || message['content'] == null) {
+          throw Exception('Response missing content field: ${response.body}');
+        }
+        
+        final rawText = message['content'].trim();
         
         debugPrint('EdgeFunctionsService: Response length: ${rawText.length} characters');
         
