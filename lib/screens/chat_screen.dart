@@ -8,6 +8,7 @@ import '../widgets/screen_container.dart';
 import '../widgets/chat_message_bubble.dart';
 import '../widgets/chat_input.dart';
 import '../services/edge_functions_service.dart';
+import '../services/profile_service.dart';
 
 class ChatScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
@@ -58,6 +59,17 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   String _userOccupation = "";
   String _userEducation = "";
   List<String> _userPersonality = [];
+
+  // Partner profile fields
+  String _partnerName = "";
+  String _partnerBio = "";
+  List<String> _partnerInterests = [];
+  String _partnerLocation = "";
+  String _partnerBirthdate = "";
+  String _partnerGender = "";
+  String _partnerOccupation = "";
+  String _partnerEducation = "";
+  List<String> _partnerPersonality = [];
 
   @override
   void initState() {
@@ -306,6 +318,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         } else {
           debugPrint('ChatScreen: Using existing conversation_id: $_conversationId');
         }
+        
+        // Fetch partner profile if we're in a relationship
+        if (_relationshipId != null && _relationshipId != 'self') {
+          debugPrint('ChatScreen: Fetching partner profile');
+          await _fetchPartnerProfile();
+        }
 
         // Once we have the profile, fetch conversations for this relationship_id
         if (_relationshipId != null) {
@@ -329,6 +347,44 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     setState(() => _isLoading = false);
     debugPrint('ChatScreen: _fetchUserProfile() completed');
   }
+  
+  /// Fetch partner profile using ProfileService
+  Future<void> _fetchPartnerProfile() async {
+    debugPrint('ChatScreen: _fetchPartnerProfile() called');
+    
+    try {
+      final partnerProfile = await ProfileService.fetchPartnerProfile();
+      
+      if (partnerProfile != null) {
+        debugPrint('ChatScreen: Partner profile fetched successfully');
+        setState(() {
+          _partnerName = (partnerProfile['name'] ?? "") as String;
+          _partnerBio = (partnerProfile['bio'] ?? "") as String;
+          _partnerLocation = (partnerProfile['location'] ?? "") as String;
+          _partnerBirthdate = (partnerProfile['birthdate'] ?? "") as String;
+          _partnerGender = (partnerProfile['gender'] ?? "") as String;
+          _partnerOccupation = (partnerProfile['occupation'] ?? "") as String;
+          _partnerEducation = (partnerProfile['education'] ?? "") as String;
+          
+          final rawInterests = partnerProfile['interests'];
+          if (rawInterests != null && rawInterests is List) {
+            _partnerInterests = rawInterests.map((e) => e.toString()).toList();
+          }
+          
+          final rawPersonality = partnerProfile['personality_traits'];
+          if (rawPersonality != null && rawPersonality is List) {
+            _partnerPersonality = rawPersonality.map((e) => e.toString()).toList();
+          }
+        });
+        
+        debugPrint('ChatScreen: Partner profile data loaded');
+      } else {
+        debugPrint('ChatScreen: No partner profile found');
+      }
+    } catch (e) {
+      debugPrint('ChatScreen: Error fetching partner profile: $e');
+    }
+  }
 
   /// Build the system prompt from the user's profile data.
   /// We'll call this every time we do an AI request.
@@ -342,10 +398,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     
     if (_usersConversation.isNotEmpty) {
       previousConversationsText += "\n\nUser's previous conversation (most recent):\n";
-      // Only include the last 5 messages to avoid overloading the prompt
-      final recentUserMessages = _usersConversation.length > 5 
-          ? _usersConversation.sublist(_usersConversation.length - 5) 
-          : _usersConversation;
+      // Include all messages instead of just the last 5
+      final recentUserMessages = _usersConversation;
           
       for (final message in recentUserMessages) {
         final sender = message['sender_type'] == 'user' 
@@ -357,10 +411,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     
     if (_partnersConversation.isNotEmpty) {
       previousConversationsText += "\n\nPartner's previous conversation (most recent):\n";
-      // Only include the last 5 messages to avoid overloading the prompt
-      final recentPartnerMessages = _partnersConversation.length > 5 
-          ? _partnersConversation.sublist(_partnersConversation.length - 5) 
-          : _partnersConversation;
+      // Include all messages instead of just the last 5
+      final recentPartnerMessages = _partnersConversation;
           
       for (final message in recentPartnerMessages) {
         final senderName = message['profiles'] != null
@@ -372,9 +424,28 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         previousConversationsText += "$sender: ${message['text']}\n";
       }
     }
+    
+    // Build the partner profile section if available
+    String partnerProfileText = "";
+    if (_partnerName.isNotEmpty) {
+      final partnerInterestsText = _partnerInterests.join(", ");
+      final partnerPersonalityText = _partnerPersonality.join(", ");
+      
+      partnerProfileText = """
+\nThe user has a partner named $_partnerName.
+Partner bio: $_partnerBio
+Partner location: $_partnerLocation
+Partner birthdate: $_partnerBirthdate, identifies as $_partnerGender
+Partner occupation: $_partnerOccupation
+Partner education: $_partnerEducation
+Partner interests: $partnerInterestsText
+Partner personality traits: $partnerPersonalityText
+""";
+    }
 
     final prompt = """
-You are a helpful AI assistant. 
+You are Tango, an ai companion specialized in relationships.
+You are talking to a user and their partner. 
 The user's name is $_userName.
 They have this bio: $_userBio
 They live in $_userLocation. 
@@ -382,11 +453,9 @@ They were born on $_userBirthdate, identified as $_userGender.
 They work as $_userOccupation and studied $_userEducation.
 They have these interests: $interestsText
 They have these personality traits: $personalityText.
-$previousConversationsText
-
-Greet them warmly, keep track of previous conversation context, and provide helpful answers.
-Use the previous conversations for context when appropriate.
-""";
+$partnerProfileText
+For context, here are the previous conversations: $previousConversationsText
+Tango: """;
 
     debugPrint('ChatScreen: System prompt built, length: ${prompt.length} characters');
     return prompt;

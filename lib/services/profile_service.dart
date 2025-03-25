@@ -59,4 +59,73 @@ class ProfileService {
       rethrow;
     }
   }
+  
+  // Fetch partner profile based on the relationship_id
+  static Future<Map<String, dynamic>?> fetchPartnerProfile() async {
+    debugPrint('ProfileService: fetchPartnerProfile() called');
+    
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      debugPrint('ProfileService: fetchPartnerProfile() failed - Not logged in');
+      throw Exception("Not logged in");
+    }
+    
+    try {
+      // First, get the current user's profile to get the relationship_id
+      final userProfile = await fetchProfile();
+      final relationshipId = userProfile['relationship_id'];
+      
+      if (relationshipId == null || relationshipId == 'self') {
+        debugPrint('ProfileService: No relationship found or user is in self mode');
+        return null;
+      }
+      
+      debugPrint('ProfileService: Looking up relationship with ID: $relationshipId');
+      
+      // Get the relationship to find the partner ID
+      final relationship = await Supabase.instance.client
+          .from('relationships')
+          .select()
+          .eq('id', relationshipId)
+          .maybeSingle();
+          
+      if (relationship == null) {
+        debugPrint('ProfileService: Relationship not found');
+        return null;
+      }
+      
+      // Determine which user is the partner (not the current user)
+      final String partnerId;
+      if (relationship['partner_a'] == user.id) {
+        partnerId = relationship['partner_b'];
+      } else {
+        partnerId = relationship['partner_a'];
+      }
+      
+      if (partnerId == null) {
+        debugPrint('ProfileService: No partner found in relationship');
+        return null;
+      }
+      
+      debugPrint('ProfileService: Fetching partner profile with ID: $partnerId');
+      
+      // Fetch the partner's profile
+      final partnerProfile = await Supabase.instance.client
+          .from('profiles')
+          .select()
+          .eq('id', partnerId)
+          .maybeSingle();
+          
+      if (partnerProfile == null) {
+        debugPrint('ProfileService: Partner profile not found');
+        return null;
+      }
+      
+      debugPrint('ProfileService: Successfully fetched partner profile');
+      return partnerProfile as Map<String, dynamic>;
+    } catch (e) {
+      debugPrint('ProfileService: Error fetching partner profile: $e');
+      return null;
+    }
+  }
 }
