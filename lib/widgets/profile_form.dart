@@ -165,36 +165,200 @@ class _ProfileFormState extends State<ProfileForm> {
           const SizedBox(height: 24),
           
           // Name.
-          TextFormField(
-            controller: _nameController,
-            decoration: const InputDecoration(labelText: 'Name'),
-            validator: (value) =>
-                (value == null || value.isEmpty) ? 'Name cannot be empty' : null,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Name',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  hintText: 'Enter your name',
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2,
+                    ),
+                  ),
+                ),
+                validator: (value) =>
+                    (value == null || value.isEmpty) ? 'Name cannot be empty' : null,
+              ),
+            ],
           ),
           const SizedBox(height: 16),
+          
           // Bio.
-          TextFormField(
-            controller: _bioController,
-            decoration: const InputDecoration(labelText: 'Bio'),
-            maxLines: 3,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Bio',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _bioController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Tell us about yourself',
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
+          
           // Location.
-          TextFormField(
-            controller: _locationController,
-            decoration: const InputDecoration(labelText: 'Location'),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Location',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _locationController,
+                decoration: InputDecoration(
+                  hintText: 'Enter your location',
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
+          
           // Occupation.
-          TextFormField(
-            controller: _occupationController,
-            decoration: const InputDecoration(labelText: 'Occupation'),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Occupation',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _occupationController,
+                decoration: InputDecoration(
+                  hintText: 'Enter your occupation',
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
+          
           // Education.
-          TextFormField(
-            controller: _educationController,
-            decoration: const InputDecoration(labelText: 'Education'),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Education',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _educationController,
+                decoration: InputDecoration(
+                  hintText: 'Enter your education',
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           // Interests Chips.
@@ -312,25 +476,76 @@ class _ProfileFormState extends State<ProfileForm> {
           
           const SizedBox(height: 16),
           // Birthdate Picker.
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  _birthDate == null
-                      ? 'No birthdate selected'
-                      : 'Birthdate: ${_birthDate!.toLocal().toString().split(' ')[0]}',
-                ),
+              const Text(
+                'Birthdate',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
-              TextButton(
-                onPressed: _pickBirthDate,
-                child: const Text('Select Birthdate'),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Theme.of(context).dividerColor,
+                    width: 1,
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _birthDate == null
+                          ? 'No birthdate selected'
+                          : 'Birthdate: ${_birthDate!.toLocal().toString().split(' ')[0]}',
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: _pickBirthDate,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Select Date'),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: _save,
-            child: const Text('Save'),
+            onPressed: widget.isLoading ? null : _save,
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: Theme.of(context).disabledColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: widget.isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Text(
+                    'Save Profile',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ),
         ],
       ),
