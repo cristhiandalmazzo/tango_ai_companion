@@ -242,7 +242,7 @@ class RelationshipService {
               'partner_a': userId,
               'partner_b': null,
               'start_date': DateTime.now().toIso8601String(),
-              'status': 'active',
+              'status': 'undefined',
               'active': true,
               'additional_data': {
                 'notes': [],

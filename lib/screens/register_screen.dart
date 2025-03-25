@@ -127,7 +127,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
         // This is Partner A. Create a new relationship record with partner_a.
         final newRelationship = await Supabase.instance.client
             .from('relationships')
-            .insert({'partner_a': userId})
+            .insert({
+              'partner_a': userId,
+              'active': true,
+              'status': 'undefined'
+            })
             .select()
             .single();
 

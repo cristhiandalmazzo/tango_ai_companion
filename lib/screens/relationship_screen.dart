@@ -248,6 +248,11 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
             
             const SizedBox(height: 30),
             
+            // Relationship status
+            _buildRelationshipStatusSection(),
+            
+            const SizedBox(height: 30),
+            
             // Relationship insights card
             Card(
               elevation: 4,
@@ -1137,5 +1142,106 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildRelationshipStatusSection() {
+    final relationship = _relationshipData['relationship'] ?? {};
+    final currentStatus = relationship['status'] ?? 'undefined';
+    
+    final statusOptions = {
+      'undefined': 'Not Set',
+      'dating': 'Dating',
+      'engaged': 'Engaged',
+      'married': 'Married',
+      'partners': 'Partners',
+    };
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          'Relationship Status',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: currentStatus,
+              isExpanded: true,
+              icon: const Icon(Icons.arrow_drop_down),
+              elevation: 16,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+                fontSize: 16,
+              ),
+              onChanged: (String? newStatus) {
+                if (newStatus != null && newStatus != currentStatus) {
+                  _updateRelationshipStatus(newStatus);
+                }
+              },
+              items: statusOptions.entries
+                  .map<DropdownMenuItem<String>>((entry) {
+                return DropdownMenuItem<String>(
+                  value: entry.key,
+                  child: Text(entry.value),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Future<void> _updateRelationshipStatus(String newStatus) async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final result = await RelationshipService.updateRelationship({
+        'status': newStatus,
+      });
+      
+      if (result) {
+        // Reload the data
+        await _loadRelationshipData();
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Relationship status updated')),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating status: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 } 
