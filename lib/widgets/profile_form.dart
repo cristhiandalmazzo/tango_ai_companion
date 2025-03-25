@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/language_provider.dart';
 import 'interests_chips.dart'; // Your reusable interests widget.
 import 'traits_chips.dart';    // Your reusable traits widget.
 import 'profile_picture_picker.dart'; // The new profile picture picker widget.
@@ -47,7 +49,7 @@ class _ProfileFormState extends State<ProfileForm> {
     'Adventurous', 'Organized', 'Spontaneous', 'Reliable', 'Optimistic', 'Humorous', 'Thoughtful'
   ];
   final List<String> _genderOptions = ['Male', 'Female', 'Other', 'Prefer not to say'];
-  final List<String> _languageOptions = ['English', 'Spanish', 'French', 'German', 'Other'];
+  final List<String> _languageOptions = ['English', 'Portuguese (Brazil)'];
 
   @override
   void initState() {
@@ -59,7 +61,17 @@ class _ProfileFormState extends State<ProfileForm> {
     _occupationController = TextEditingController(text: _profileData['occupation'] ?? '');
     _educationController = TextEditingController(text: _profileData['education'] ?? '');
     _selectedGender = _profileData['gender'];
-    _selectedLanguage = _profileData['language_preference'];
+    
+    // Handle language preference - map database values to dropdown options
+    String? langPref = _profileData['language_preference'];
+    if (langPref == 'pt') {
+      _selectedLanguage = 'Portuguese (Brazil)';
+    } else if (langPref == 'en' || langPref == 'English') {
+      _selectedLanguage = 'English';
+    } else {
+      _selectedLanguage = 'English'; // Default to English if unknown
+    }
+    
     if (_profileData['interests'] != null && _profileData['interests'] is List) {
       _selectedInterests = List<String>.from(_profileData['interests']);
     }
@@ -99,6 +111,15 @@ class _ProfileFormState extends State<ProfileForm> {
 
   void _save() {
     if (!_formKey.currentState!.validate()) return;
+    
+    // Convert selected language display name to language code
+    String? languageCode;
+    if (_selectedLanguage == 'Portuguese (Brazil)') {
+      languageCode = 'pt';
+    } else {
+      languageCode = 'en';
+    }
+    
     final updates = {
       'name': _nameController.text,
       'bio': _bioController.text,
@@ -106,14 +127,27 @@ class _ProfileFormState extends State<ProfileForm> {
       'occupation': _occupationController.text,
       'education': _educationController.text,
       'gender': _selectedGender,
-      'language_preference': _selectedLanguage,
+      'language_preference': languageCode,
       'interests': _selectedInterests,
       'personality_traits': _selectedTraits,
       // Store birthdate instead of age.
       'birthdate': _birthDate?.toIso8601String(),
       'updated_at': DateTime.now().toIso8601String(),
     };
+    
+    // Update app-wide language when profile is updated
+    _updateAppLanguage(languageCode);
+    
     widget.onSave(updates);
+  }
+
+  void _updateAppLanguage(String languageCode) {
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    if (languageCode == 'pt') {
+      languageProvider.setLocale(const Locale('pt', 'BR'));
+    } else {
+      languageProvider.setLocale(const Locale('en'));
+    }
   }
 
   void _handleProfileUpdated(Map<String, dynamic> updatedProfile) {

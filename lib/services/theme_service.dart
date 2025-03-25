@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 
 class ThemeService {
   static const String _themeKey = 'theme_mode';
@@ -7,22 +8,38 @@ class ThemeService {
   // Get the current theme mode
   static Future<ThemeMode> getThemeMode() async {
     final prefs = await SharedPreferences.getInstance();
-    final themeIndex = prefs.getInt(_themeKey) ?? 0;
-    return ThemeMode.values[themeIndex];
+    // Default to light mode (index 1) instead of system (index 0)
+    // This ensures we're always in a definite state - light or dark
+    final themeIndex = prefs.getInt(_themeKey) ?? 1; 
+    final mode = ThemeMode.values[themeIndex];
+    debugPrint('ThemeService: Getting current theme mode: $mode');
+    return mode;
   }
   
   // Save the current theme mode
   static Future<void> saveThemeMode(ThemeMode mode) async {
+    debugPrint('ThemeService: Saving theme mode: $mode');
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_themeKey, mode.index);
+    debugPrint('ThemeService: Theme mode saved: $mode');
   }
   
   // Toggle between light and dark theme
   static Future<ThemeMode> toggleTheme() async {
+    debugPrint('ThemeService: toggleTheme called');
     final currentMode = await getThemeMode();
     final newMode = currentMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    debugPrint('ThemeService: Toggling from $currentMode to $newMode');
     await saveThemeMode(newMode);
     return newMode;
+  }
+  
+  // Direct toggle - for more responsive UI when we already know the current theme
+  static Future<void> directToggle(ThemeMode currentMode) async {
+    debugPrint('ThemeService: directToggle called with $currentMode');
+    final newMode = currentMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    await saveThemeMode(newMode);
+    debugPrint('ThemeService: directToggle completed, new mode: $newMode');
   }
   
   // Light theme data

@@ -48,6 +48,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  // Start with a definite state (light) rather than relying on system default
   ThemeMode _themeMode = ThemeMode.light;
 
   @override
@@ -58,20 +59,33 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _loadTheme() async {
     final themeMode = await ThemeService.getThemeMode();
+    debugPrint('MyApp: Loaded theme from storage: $themeMode');
     setState(() {
       _themeMode = themeMode;
+      debugPrint('MyApp: Set initial theme to $_themeMode');
     });
   }
 
   void _changeTheme(ThemeMode mode) {
+    debugPrint('MyApp: _changeTheme called with mode: $mode');
+    debugPrint('MyApp: Current mode before change: $_themeMode');
+    
     setState(() {
       _themeMode = mode;
+      debugPrint('MyApp: Theme changed to $_themeMode');
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
+    
+    // Sync app language with user profile when user is logged in
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      // Use Future.microtask to avoid calling setState during build
+      Future.microtask(() => languageProvider.syncWithUserProfile());
+    }
     
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -207,9 +221,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initializeApp() async {
-    await Supabase.initialize(
-      url: supabaseUrl,
-      anonKey: supabaseAnonKey,
-    );
+    // Remove duplicate Supabase initialization
+    // Supabase is already initialized in the main() function
+    // This was causing the "This instance is already initialized" error
+    debugPrint('_initializeApp: Initialization complete');
   }
 }

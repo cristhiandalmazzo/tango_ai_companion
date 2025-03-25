@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'theme_toggle.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -61,9 +62,22 @@ class AppDrawer extends StatelessWidget {
                   context: context,
                   icon: Icons.dark_mode,
                   title: 'Dark Mode',
-                  trailing: ThemeToggle(
-                    currentThemeMode: currentThemeMode,
-                    onThemeChanged: onThemeChanged,
+                  trailing: Builder(
+                    builder: (context) {
+                      debugPrint('AppDrawer: Building ThemeToggle with currentThemeMode: $currentThemeMode');
+                      return ThemeToggle(
+                        key: const ValueKey('theme_toggle'),
+                        currentThemeMode: currentThemeMode,
+                        onThemeChanged: (mode) {
+                          debugPrint('AppDrawer: ThemeToggle callback called with mode: $mode');
+                          // Ensure we're setting to a definite state
+                          final newMode = (mode == ThemeMode.dark) ? ThemeMode.dark : ThemeMode.light;
+                          debugPrint('AppDrawer: Enforcing definite theme state: $newMode');
+                          onThemeChanged(newMode);
+                          debugPrint('AppDrawer: Called parent onThemeChanged');
+                        },
+                      );
+                    }
                   ),
                 ),
                 _buildNavItem(
