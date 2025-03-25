@@ -55,22 +55,48 @@ jobs:
               <meta charset="utf-8">
               <title>Tango AI Companion</title>
               <script type="text/javascript">
-                // Single Page Apps for GitHub Pages
-                // MIT License
-                // https://github.com/rafgraph/spa-github-pages
-                var segmentCount = 1;
-                var l = window.location;
-                l.replace(
-                  l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-                  l.pathname.split('/').slice(0, 1 + segmentCount).join('/') + '/?p=/' +
-                  l.pathname.slice(1).split('/').slice(segmentCount).join('/').replace(/&/g, '~and~') +
-                  (l.search ? '&q=' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-                  l.hash
-                );
+                // Improved SPA routing for GitHub Pages with complex URLs
+                // Modified from https://github.com/rafgraph/spa-github-pages
+                (function() {
+                  var pathSegmentsToKeep = 1; // Keep /tango_ai_companion
+                  var fullPath = window.location.pathname;
+                  var pathParts = fullPath.split('/').filter(p => p);
+                  
+                  // Keep the base path (repository name)
+                  var basePath = '';
+                  if (pathParts.length > 0) {
+                    basePath = '/' + pathParts[0];
+                  }
+                  
+                  // Extract the route part (everything after the base path)
+                  var routePath = '';
+                  if (pathParts.length > 1) {
+                    routePath = '/' + pathParts.slice(1).join('/');
+                  }
+                  
+                  // Get any query parameters
+                  var queryParams = window.location.search || '';
+                  // Get any hash fragment
+                  var hashFragment = window.location.hash || '';
+                  
+                  // Log for debugging
+                  console.log('404 Redirect -', {
+                    fullPath: fullPath,
+                    basePath: basePath,
+                    routePath: routePath,
+                    queryParams: queryParams
+                  });
+                  
+                  // Redirect to the base URL with the route path as a query parameter
+                  window.location.href = basePath + '/?' + 
+                    'route=' + encodeURIComponent(routePath) + 
+                    (queryParams ? '&' + queryParams.substring(1) : '') + 
+                    hashFragment;
+                })();
               </script>
             </head>
             <body>
-              Redirecting...
+              <p>Redirecting to main page...</p>
             </body>
           </html>
           EOL
@@ -79,23 +105,50 @@ jobs:
         run: |
           # Add SPA route handling script to index.html
           sed -i '/<head>/a \
-          <!-- Start Single Page Apps for GitHub Pages -->\
+          <!-- Start Improved SPA routing for GitHub Pages -->\
           <script type="text/javascript">\
-            // Single Page Apps for GitHub Pages\
-            // MIT License\
-            // https://github.com/rafgraph/spa-github-pages\
-            (function(l) {\
-              if (l.search[1] === "/" ) {\
-                var decoded = l.search.slice(1).split("&").map(function(s) { \
-                  return s.replace(/~and~/g, "&")\
-                }).join("?");\
-                window.history.replaceState(null, null,\
-                    l.pathname.slice(0, -1) + decoded + l.hash\
-                );\
+            // Process the URL parameters for SPA routing\
+            document.addEventListener("DOMContentLoaded", function() {\
+              // Function to parse query parameters\
+              function getQueryParams() {\
+                var params = {};\
+                var queryString = window.location.search.substring(1);\
+                var pairs = queryString.split("&");\
+                for (var i = 0; i < pairs.length; i++) {\
+                  var pair = pairs[i].split("=");\
+                  if (pair.length === 2) {\
+                    params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || "");\
+                  }\
+                }\
+                return params;\
               }\
-            }(window.location))\
+              \
+              var params = getQueryParams();\
+              \
+              // Check if we have a route parameter from the 404.html redirect\
+              if (params.route) {\
+                var routePath = params.route;\
+                delete params.route;\
+                \
+                // Rebuild the query string without the route parameter\
+                var newQueryString = Object.keys(params)\
+                  .map(function(key) { return key + "=" + encodeURIComponent(params[key]); })\
+                  .join("&");\
+                \
+                // Construct the new URL\
+                var newPath = window.location.pathname + routePath;\
+                var newUrl = newPath + (newQueryString ? "?" + newQueryString : "") + window.location.hash;\
+                \
+                console.log("Redirecting to:", newUrl);\
+                \
+                // Use replaceState to update the URL without reloading\
+                if (window.history && window.history.replaceState) {\
+                  window.history.replaceState(null, null, newUrl);\
+                }\
+              }\
+            });\
           </script>\
-          <!-- End Single Page Apps for GitHub Pages -->' build/web/index.html
+          <!-- End Improved SPA routing for GitHub Pages -->' build/web/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v3

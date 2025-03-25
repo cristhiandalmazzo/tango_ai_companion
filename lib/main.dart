@@ -80,19 +80,50 @@ class _MyAppState extends State<MyApp> {
       },
       // Use onGenerateRoute to handle dynamic routes.
       onGenerateRoute: (settings) {
+        if (kDebugMode) {
+          print("Processing route: ${settings.name}");
+        }
+
         // Default route: if no route specified, go to LoginScreen.
         if (settings.name == '/') {
           return MaterialPageRoute(builder: (context) => const LoginScreen());
         }
+
         // Handle the signup route with relationshipId
-        if (settings.name!.startsWith('/signup') || settings.name!.endsWith('/signup')) {
-          // Parse the URL to extract the relationshipId query parameter.
-          final uri = Uri.parse(settings.name!);
-          final relationshipId = uri.queryParameters['relationshipId'];
+        // Check for multiple possible URL patterns
+        if (settings.name!.contains('signup')) {
           if (kDebugMode) {
-            print("Handling URL: ${settings.name}");
-            print("Extracted relationshipId: $relationshipId");
+            print("Found signup in route: ${settings.name}");
           }
+          
+          // Try to extract the relationshipId parameter from different formats
+          String? relationshipId;
+          
+          try {
+            final uri = Uri.parse(settings.name!);
+            relationshipId = uri.queryParameters['relationshipId'];
+            
+            if (kDebugMode) {
+              print("Query parameters: ${uri.queryParameters}");
+              print("Extracted relationshipId from query: $relationshipId");
+            }
+            
+            // If relationship ID is null, try to check if it's in the path segments
+            if (relationshipId == null && uri.pathSegments.length > 1) {
+              final lastSegment = uri.pathSegments.last;
+              if (lastSegment != 'signup' && lastSegment.length > 8) {
+                relationshipId = lastSegment;
+                if (kDebugMode) {
+                  print("Extracted relationshipId from path: $relationshipId");
+                }
+              }
+            }
+          } catch (e) {
+            if (kDebugMode) {
+              print("Error parsing URL: $e");
+            }
+          }
+          
           return MaterialPageRoute(
             builder: (context) => SignUpScreen(
               relationshipId: relationshipId,
@@ -101,6 +132,7 @@ class _MyAppState extends State<MyApp> {
             ),
           );
         }
+        
         // Fallback to LoginScreen for unknown routes.
         return MaterialPageRoute(builder: (context) => const LoginScreen());
       },
