@@ -6,6 +6,7 @@ import '../providers/language_provider.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/app_container.dart';
+import '../widgets/language_selector.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -53,7 +54,14 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 60),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: LanguageSelector(isCompact: true),
+                  ),
+                ),
+                const SizedBox(height: 30),
                 _buildHeader(),
                 const SizedBox(height: 40),
                 _buildLoginForm(),

@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/app_container.dart';
+import '../widgets/language_selector.dart';
 
 class SignUpScreen extends StatefulWidget {
   final String? relationshipId;
@@ -233,7 +234,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 40),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: LanguageSelector(isCompact: true),
+                  ),
+                ),
+                const SizedBox(height: 20),
                 _buildHeader(),
                 const SizedBox(height: 40),
                 _buildRegisterForm(),
