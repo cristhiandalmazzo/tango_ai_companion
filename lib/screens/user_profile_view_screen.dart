@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/screen_container.dart';
+import '../widgets/app_container.dart';
 import '../services/profile_service.dart';
 
 class UserProfileViewScreen extends StatefulWidget {
@@ -74,7 +75,11 @@ class _UserProfileViewScreenState extends State<UserProfileViewScreen> {
       isLoading: false, // Handle loading states within the body
       currentThemeMode: widget.currentThemeMode,
       onThemeChanged: widget.onThemeChanged,
-      body: _buildBody(),
+      body: SingleChildScrollView(
+        child: AppContainer(
+          child: _buildBody(),
+        ),
+      ),
     );
   }
 
@@ -99,13 +104,10 @@ class _UserProfileViewScreenState extends State<UserProfileViewScreen> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: Text(
-                _errorMessage,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+            Text(
+              _errorMessage,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -117,111 +119,108 @@ class _UserProfileViewScreenState extends State<UserProfileViewScreen> {
       );
     }
     
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Profile picture
-          _buildProfilePicture(),
-          const SizedBox(height: 24),
-          
-          // Edit Profile Button
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, '/edit_profile');
-            },
-            icon: const Icon(Icons.edit),
-            label: const Text('Edit Profile'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Profile picture
+        _buildProfilePicture(),
+        const SizedBox(height: 24),
+        
+        // Edit Profile Button
+        ElevatedButton.icon(
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/edit_profile');
+          },
+          icon: const Icon(Icons.edit),
+          label: const Text('Edit Profile'),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
-          
-          const SizedBox(height: 24),
-          
-          // Name
+        ),
+        
+        const SizedBox(height: 24),
+        
+        // Name
+        _buildProfileDetail(
+          title: 'Name', 
+          value: _userProfile!['name'] ?? _userProfile!['full_name'] ?? 'Not provided',
+          icon: Icons.person,
+        ),
+        
+        // Bio
+        if (_userProfile!['bio'] != null)
           _buildProfileDetail(
-            title: 'Name', 
-            value: _userProfile!['name'] ?? _userProfile!['full_name'] ?? 'Not provided',
-            icon: Icons.person,
+            title: 'Bio', 
+            value: _userProfile!['bio'], 
+            icon: Icons.description,
+            maxLines: 5,
           ),
           
-          // Bio
-          if (_userProfile!['bio'] != null)
-            _buildProfileDetail(
-              title: 'Bio', 
-              value: _userProfile!['bio'], 
-              icon: Icons.description,
-              maxLines: 5,
-            ),
-            
-          // Location
-          if (_userProfile!['location'] != null)
-            _buildProfileDetail(
-              title: 'Location', 
-              value: _userProfile!['location'], 
-              icon: Icons.location_on,
-            ),
-            
-          // Occupation
-          if (_userProfile!['occupation'] != null)
-            _buildProfileDetail(
-              title: 'Occupation', 
-              value: _userProfile!['occupation'], 
-              icon: Icons.work,
-            ),
-            
-          // Education
-          if (_userProfile!['education'] != null)
-            _buildProfileDetail(
-              title: 'Education', 
-              value: _userProfile!['education'], 
-              icon: Icons.school,
-            ),
-            
-          // Gender
-          if (_userProfile!['gender'] != null)
-            _buildProfileDetail(
-              title: 'Gender', 
-              value: _userProfile!['gender'], 
-              icon: Icons.person_outline,
-            ),
-            
-          // Age
-          if (_userProfile!['birthdate'] != null)
-            _buildProfileDetail(
-              title: 'Age', 
-              value: _calculateAge(_userProfile!['birthdate']), 
-              icon: Icons.cake,
-            ),
-            
-          const SizedBox(height: 16),
+        // Location
+        if (_userProfile!['location'] != null)
+          _buildProfileDetail(
+            title: 'Location', 
+            value: _userProfile!['location'], 
+            icon: Icons.location_on,
+          ),
           
-          // Interests
-          if (_userProfile!['interests'] != null && (_userProfile!['interests'] as List).isNotEmpty)
-            _buildChipsSection(
-              title: 'Interests', 
-              items: List<String>.from(_userProfile!['interests']),
-              icon: Icons.favorite_border,
-              chipColor: Theme.of(context).colorScheme.primaryContainer,
-            ),
-            
-          // Personality Traits
-          if (_userProfile!['personality_traits'] != null && (_userProfile!['personality_traits'] as List).isNotEmpty)
-            _buildChipsSection(
-              title: 'Personality Traits', 
-              items: List<String>.from(_userProfile!['personality_traits']),
-              icon: Icons.psychology,
-              chipColor: Theme.of(context).colorScheme.secondaryContainer,
-            ),
-          
-          const SizedBox(height: 20),
-        ],
-      ),
+        // Occupation
+        if (_userProfile!['occupation'] != null)
+          _buildProfileDetail(
+            title: 'Occupation', 
+            value: _userProfile!['occupation'], 
+            icon: Icons.work,
+          ),
+        
+        // Education
+        if (_userProfile!['education'] != null)
+          _buildProfileDetail(
+            title: 'Education', 
+            value: _userProfile!['education'], 
+            icon: Icons.school,
+          ),
+        
+        // Gender
+        if (_userProfile!['gender'] != null)
+          _buildProfileDetail(
+            title: 'Gender', 
+            value: _userProfile!['gender'], 
+            icon: Icons.person_outline,
+          ),
+        
+        // Age
+        if (_userProfile!['birthdate'] != null)
+          _buildProfileDetail(
+            title: 'Age', 
+            value: _calculateAge(_userProfile!['birthdate']), 
+            icon: Icons.cake,
+          ),
+        
+        const SizedBox(height: 16),
+        
+        // Interests
+        if (_userProfile!['interests'] != null && (_userProfile!['interests'] as List).isNotEmpty)
+          _buildChipsSection(
+            title: 'Interests', 
+            items: List<String>.from(_userProfile!['interests']),
+            icon: Icons.favorite_border,
+            chipColor: Theme.of(context).colorScheme.primaryContainer,
+          ),
+        
+        // Personality Traits
+        if (_userProfile!['personality_traits'] != null && (_userProfile!['personality_traits'] as List).isNotEmpty)
+          _buildChipsSection(
+            title: 'Personality Traits', 
+            items: List<String>.from(_userProfile!['personality_traits']),
+            icon: Icons.psychology,
+            chipColor: Theme.of(context).colorScheme.secondaryContainer,
+          ),
+        
+        const SizedBox(height: 20),
+      ],
     );
   }
 

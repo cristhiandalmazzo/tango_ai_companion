@@ -967,24 +967,24 @@ Tango: """;
       );
     }
 
-    return ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      itemCount: _messages.length,
-      physics: const AlwaysScrollableScrollPhysics(),
-      itemBuilder: (context, index) {
-        final role = _messages[index]['role']!;
-        final rawText = _messages[index]['content'] ?? "";
-        final text = TextProcessingService.normalizeTextPreserveMarkup(rawText);
-        final isUser = (role == 'user');
+    return AppContainer(
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        itemCount: _messages.length,
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemBuilder: (context, index) {
+          final role = _messages[index]['role']!;
+          final rawText = _messages[index]['content'] ?? "";
+          final text = TextProcessingService.normalizeTextPreserveMarkup(rawText);
+          final isUser = (role == 'user');
 
-        return AppContainer(
-          child: ChatMessageBubble(
+          return ChatMessageBubble(
             message: text,
             isUser: isUser,
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/screen_container.dart';
+import '../widgets/app_container.dart';
 
 class HomeScreen extends StatelessWidget {
   final ThemeMode currentThemeMode;
@@ -18,14 +19,15 @@ class HomeScreen extends StatelessWidget {
       currentThemeMode: currentThemeMode,
       onThemeChanged: onThemeChanged,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildWelcomeCard(context),
-            const SizedBox(height: 24),
-            _buildFeatureSection(context),
-          ],
+        child: AppContainer(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildWelcomeCard(context),
+              const SizedBox(height: 24),
+              _buildFeatureSection(context),
+            ],
+          ),
         ),
       ),
     );

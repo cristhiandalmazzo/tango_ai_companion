@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/screen_container.dart';
 import '../services/relationship_service.dart';
+import '../widgets/app_container.dart';
 
 class SettingsScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
@@ -137,52 +138,111 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: 'Settings',
       currentThemeMode: widget.currentThemeMode,
       onThemeChanged: widget.onThemeChanged,
-      body: ListView(
-        children: [
-          _buildSection(
-            'General',
-            [
-              ListTile(
-                leading: const Icon(Icons.dark_mode),
-                title: const Text('Dark Mode'),
-                trailing: Switch(
-                  value: widget.currentThemeMode == ThemeMode.dark,
-                  onChanged: (bool value) {
-                    widget.onThemeChanged(
-                      value ? ThemeMode.dark : ThemeMode.light,
-                    );
+      body: SingleChildScrollView(
+        child: AppContainer(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSection('Appearance', [
+                _buildThemeToggle(context),
+                _buildDivider(),
+              ]),
+              _buildSection('Account', [
+                _buildListTile(
+                  context,
+                  icon: Icons.person_outline,
+                  title: 'Profile Settings',
+                  onTap: () => Navigator.pushNamed(context, '/profile'),
+                ),
+                _buildDivider(),
+                _buildListTile(
+                  context,
+                  icon: Icons.notifications_outlined,
+                  title: 'Notifications',
+                  onTap: () {},
+                ),
+                _buildDivider(),
+                _buildListTile(
+                  context,
+                  icon: Icons.privacy_tip_outlined,
+                  title: 'Privacy',
+                  onTap: () {},
+                ),
+                _buildDivider(),
+                _buildListTile(
+                  context,
+                  icon: Icons.security_outlined,
+                  title: 'Security',
+                  onTap: () {},
+                ),
+                _buildDivider(),
+                _buildListTile(
+                  context,
+                  icon: Icons.heart_broken,
+                  title: 'Exit Relationship',
+                  onTap: _showExitRelationshipDialog,
+                ),
+              ]),
+              _buildSection('Support', [
+                _buildListTile(
+                  context,
+                  icon: Icons.help_outline,
+                  title: 'Help Center',
+                  onTap: () {},
+                ),
+                _buildDivider(),
+                _buildListTile(
+                  context,
+                  icon: Icons.info_outline,
+                  title: 'About',
+                  onTap: () {},
+                ),
+                _buildDivider(),
+                _buildListTile(
+                  context,
+                  icon: Icons.logout,
+                  title: 'Logout',
+                  onTap: () {
+                    // Handle logout
                   },
                 ),
-              ),
+              ]),
             ],
           ),
-          _buildSection(
-            'Profile',
-            [
-              ListTile(
-                leading: const Icon(Icons.person),
-                title: const Text('Edit Profile'),
-                onTap: () {
-                  Navigator.pushNamed(context, '/profile');
-                },
-              ),
-            ],
-          ),
-          _buildSection(
-            'Relationship',
-            [
-              ListTile(
-                leading: const Icon(Icons.exit_to_app),
-                title: const Text('Exit Relationship'),
-                textColor: Colors.red,
-                iconColor: Colors.red,
-                onTap: _showExitRelationshipDialog,
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
+  }
+
+  Widget _buildThemeToggle(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.dark_mode),
+      title: const Text('Dark Mode'),
+      trailing: Switch(
+        value: widget.currentThemeMode == ThemeMode.dark,
+        onChanged: (value) {
+          widget.onThemeChanged(value ? ThemeMode.dark : ThemeMode.light);
+        },
+      ),
+    );
+  }
+
+  Widget _buildListTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildDivider() {
+    return const Divider(height: 1);
   }
 
   Widget _buildSection(String title, List<Widget> items) {

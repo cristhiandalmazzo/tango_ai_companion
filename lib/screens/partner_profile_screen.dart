@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/screen_container.dart';
+import '../widgets/app_container.dart';
 import '../services/profile_service.dart';
 import '../services/relationship_service.dart';
 
@@ -90,7 +91,11 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
       isLoading: false, // Handle loading states within the body
       currentThemeMode: widget.currentThemeMode,
       onThemeChanged: widget.onThemeChanged,
-      body: _buildBody(),
+      body: SingleChildScrollView(
+        child: AppContainer(
+          child: _buildBody(),
+        ),
+      ),
     );
   }
 
@@ -111,17 +116,14 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              _partnerProfile == null ? 'Partner Profile Not Found' : 'Error Loading Partner Profile',
+              'Error Loading Profile',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: Text(
-                _partnerProfile == null ? 'Could not find partner profile information.' : _errorMessage,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+            Text(
+              _errorMessage,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -133,95 +135,92 @@ class _PartnerProfileScreenState extends State<PartnerProfileScreen> {
       );
     }
     
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Profile picture
-          _buildProfilePicture(),
-          const SizedBox(height: 24),
-          
-          // Name
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Profile picture
+        _buildProfilePicture(),
+        const SizedBox(height: 24),
+        
+        // Name
+        _buildProfileDetail(
+          title: 'Name', 
+          value: _partnerProfile!['name'] ?? _partnerProfile!['full_name'] ?? 'Not provided',
+          icon: Icons.person,
+        ),
+        
+        // Bio
+        if (_partnerProfile!['bio'] != null)
           _buildProfileDetail(
-            title: 'Name', 
-            value: _partnerProfile!['name'] ?? _partnerProfile!['full_name'] ?? 'Not provided',
-            icon: Icons.person,
+            title: 'Bio', 
+            value: _partnerProfile!['bio'], 
+            icon: Icons.description,
+            maxLines: 5,
           ),
           
-          // Bio
-          if (_partnerProfile!['bio'] != null)
-            _buildProfileDetail(
-              title: 'Bio', 
-              value: _partnerProfile!['bio'], 
-              icon: Icons.description,
-              maxLines: 5,
-            ),
-            
-          // Location
-          if (_partnerProfile!['location'] != null)
-            _buildProfileDetail(
-              title: 'Location', 
-              value: _partnerProfile!['location'], 
-              icon: Icons.location_on,
-            ),
-            
-          // Occupation
-          if (_partnerProfile!['occupation'] != null)
-            _buildProfileDetail(
-              title: 'Occupation', 
-              value: _partnerProfile!['occupation'], 
-              icon: Icons.work,
-            ),
-            
-          // Education
-          if (_partnerProfile!['education'] != null)
-            _buildProfileDetail(
-              title: 'Education', 
-              value: _partnerProfile!['education'], 
-              icon: Icons.school,
-            ),
-            
-          // Gender
-          if (_partnerProfile!['gender'] != null)
-            _buildProfileDetail(
-              title: 'Gender', 
-              value: _partnerProfile!['gender'], 
-              icon: Icons.person_outline,
-            ),
-            
-          // Age
-          if (_partnerProfile!['birthdate'] != null)
-            _buildProfileDetail(
-              title: 'Age', 
-              value: _calculateAge(_partnerProfile!['birthdate']), 
-              icon: Icons.cake,
-            ),
-            
-          const SizedBox(height: 16),
+        // Location
+        if (_partnerProfile!['location'] != null)
+          _buildProfileDetail(
+            title: 'Location', 
+            value: _partnerProfile!['location'], 
+            icon: Icons.location_on,
+          ),
           
-          // Interests
-          if (_partnerProfile!['interests'] != null && (_partnerProfile!['interests'] as List).isNotEmpty)
-            _buildChipsSection(
-              title: 'Interests', 
-              items: List<String>.from(_partnerProfile!['interests']),
-              icon: Icons.favorite_border,
-              chipColor: Theme.of(context).colorScheme.primaryContainer,
-            ),
-            
-          // Personality Traits
-          if (_partnerProfile!['personality_traits'] != null && (_partnerProfile!['personality_traits'] as List).isNotEmpty)
-            _buildChipsSection(
-              title: 'Personality Traits', 
-              items: List<String>.from(_partnerProfile!['personality_traits']),
-              icon: Icons.psychology,
-              chipColor: Theme.of(context).colorScheme.secondaryContainer,
-            ),
-          
-          // Remove the "Back to Relationship" button
-          const SizedBox(height: 20),
-        ],
-      ),
+        // Occupation
+        if (_partnerProfile!['occupation'] != null)
+          _buildProfileDetail(
+            title: 'Occupation', 
+            value: _partnerProfile!['occupation'], 
+            icon: Icons.work,
+          ),
+        
+        // Education
+        if (_partnerProfile!['education'] != null)
+          _buildProfileDetail(
+            title: 'Education', 
+            value: _partnerProfile!['education'], 
+            icon: Icons.school,
+          ),
+        
+        // Gender
+        if (_partnerProfile!['gender'] != null)
+          _buildProfileDetail(
+            title: 'Gender', 
+            value: _partnerProfile!['gender'], 
+            icon: Icons.person_outline,
+          ),
+        
+        // Age
+        if (_partnerProfile!['birthdate'] != null)
+          _buildProfileDetail(
+            title: 'Age', 
+            value: _calculateAge(_partnerProfile!['birthdate']), 
+            icon: Icons.cake,
+          ),
+        
+        const SizedBox(height: 16),
+        
+        // Interests
+        if (_partnerProfile!['interests'] != null && (_partnerProfile!['interests'] as List).isNotEmpty)
+          _buildChipsSection(
+            title: 'Interests', 
+            items: List<String>.from(_partnerProfile!['interests']),
+            icon: Icons.favorite_border,
+            chipColor: Theme.of(context).colorScheme.primaryContainer,
+          ),
+        
+        // Personality Traits
+        if (_partnerProfile!['personality_traits'] != null && (_partnerProfile!['personality_traits'] as List).isNotEmpty)
+          _buildChipsSection(
+            title: 'Personality Traits', 
+            items: List<String>.from(_partnerProfile!['personality_traits']),
+            icon: Icons.psychology,
+            chipColor: Theme.of(context).colorScheme.secondaryContainer,
+          ),
+        
+        // Remove the "Back to Relationship" button
+        const SizedBox(height: 20),
+      ],
     );
   }
 

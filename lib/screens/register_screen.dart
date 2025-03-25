@@ -6,6 +6,7 @@ import 'home_screen.dart';
 import 'package:uuid/uuid.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
+import '../widgets/app_container.dart';
 
 class SignUpScreen extends StatefulWidget {
   final String? relationshipId;
@@ -225,15 +226,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 40),
-              _buildHeader(),
-              const SizedBox(height: 40),
-              _buildRegisterForm(),
-            ],
+          child: AppContainer(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 40),
+                _buildHeader(),
+                const SizedBox(height: 40),
+                _buildRegisterForm(),
+              ],
+            ),
           ),
         ),
       ),
