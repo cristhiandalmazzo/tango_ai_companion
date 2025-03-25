@@ -151,4 +151,38 @@ class RelationshipService {
     // Simply return the metrics that were passed in, since we can't store them
     return metrics;
   }
+  
+  // Update relationship data
+  static Future<bool> updateRelationship(Map<String, dynamic> updates) async {
+    debugPrint('RelationshipService: updateRelationship called with: $updates');
+    
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      debugPrint('RelationshipService: updateRelationship failed - Not logged in');
+      throw Exception("Not logged in");
+    }
+    
+    try {
+      // Get the current user's relationship ID
+      final userProfile = await ProfileService.fetchProfile();
+      final relationshipId = userProfile['relationship_id'];
+      
+      if (relationshipId == null || relationshipId == 'self') {
+        debugPrint('RelationshipService: No relationship found or user is in self mode');
+        throw Exception("No relationship found");
+      }
+      
+      // Update the relationship in the database
+      await Supabase.instance.client
+          .from('relationships')
+          .update(updates)
+          .eq('id', relationshipId);
+          
+      debugPrint('RelationshipService: Relationship updated successfully');
+      return true;
+    } catch (e) {
+      debugPrint('RelationshipService: Error updating relationship: $e');
+      return false;
+    }
+  }
 } 

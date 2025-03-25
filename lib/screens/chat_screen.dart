@@ -9,6 +9,7 @@ import '../widgets/chat_message_bubble.dart';
 import '../widgets/chat_input.dart';
 import '../services/edge_functions_service.dart';
 import '../services/profile_service.dart';
+import '../services/relationship_service.dart';
 
 class ChatScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
@@ -71,11 +72,22 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   String _partnerEducation = "";
   List<String> _partnerPersonality = [];
 
+  // Relationship data
+  Map<String, dynamic>? _relationshipData;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _fetchUserProfile();
+
+    // Initializing...
+    _fetchUserProfile().then((_) {
+      if (_relationshipId != null) {
+        _fetchPartnerProfile();
+        _fetchRelationshipData();
+        _fetchConversationsForRelationship();
+      }
+    });
   }
   
   @override
@@ -443,6 +455,91 @@ Partner personality traits: $partnerPersonalityText
 """;
     }
 
+    // Fetch relationship data for additional context
+    String relationshipContext = "";
+    if (_relationshipData != null && _relationshipData!.isNotEmpty) {
+      // Anniversary date
+      String anniversaryText = "";
+      if (_relationshipData!['relationship']?['start_date'] != null) {
+        try {
+          final anniversaryDate = DateTime.parse(_relationshipData!['relationship']['start_date']);
+          final now = DateTime.now();
+          final difference = now.difference(anniversaryDate);
+          final years = difference.inDays ~/ 365;
+          final months = (difference.inDays % 365) ~/ 30;
+          
+          if (years > 0) {
+            anniversaryText = "The couple has been together for $years years";
+            if (months > 0) {
+              anniversaryText += " and $months months";
+            }
+            anniversaryText += ". ";
+          } else if (months > 0) {
+            anniversaryText = "The couple has been together for $months months. ";
+          } else {
+            anniversaryText = "The couple has been together for ${difference.inDays} days. ";
+          }
+          
+          anniversaryText += "Their anniversary date is ${anniversaryDate.day}/${anniversaryDate.month}/${anniversaryDate.year}. ";
+          
+          // Calculate days until next anniversary
+          final nextAnniversary = DateTime(now.year, anniversaryDate.month, anniversaryDate.day);
+          if (nextAnniversary.isBefore(now)) {
+            final nextYearAnniversary = DateTime(now.year + 1, anniversaryDate.month, anniversaryDate.day);
+            final daysUntil = nextYearAnniversary.difference(now).inDays;
+            anniversaryText += "Their next anniversary is in $daysUntil days.";
+          } else {
+            final daysUntil = nextAnniversary.difference(now).inDays;
+            anniversaryText += "Their anniversary this year is in $daysUntil days.";
+          }
+        } catch (e) {
+          // Handle date parsing error
+          debugPrint('ChatScreen: Error parsing anniversary date: $e');
+        }
+      }
+      
+      // Relationship notes
+      String notesText = "";
+      if (_relationshipData!['relationship']?['additional_data'] != null) {
+        try {
+          final additionalData = _relationshipData!['relationship']['additional_data'];
+          if (additionalData['notes'] != null && additionalData['notes'] is List && additionalData['notes'].isNotEmpty) {
+            notesText = "\n\nRelationship notes:";
+            final notes = List<Map<String, dynamic>>.from(additionalData['notes']);
+            
+            // Sort notes by date (newest first)
+            notes.sort((a, b) {
+              if (a['date'] == null || b['date'] == null) return 0;
+              return DateTime.parse(b['date']).compareTo(DateTime.parse(a['date']));
+            });
+            
+            for (final note in notes) {
+              final title = note['title'] ?? 'Note';
+              final content = note['content'] ?? '';
+              final dateStr = note['date'] ?? '';
+              
+              String formattedDate = '';
+              if (dateStr.isNotEmpty) {
+                try {
+                  final date = DateTime.parse(dateStr);
+                  formattedDate = ' (${date.day}/${date.month}/${date.year})';
+                } catch (e) {
+                  // Skip date formatting on error
+                }
+              }
+              
+              notesText += "\n- $title$formattedDate: $content";
+            }
+          }
+        } catch (e) {
+          // Handle parsing error
+          debugPrint('ChatScreen: Error parsing relationship notes: $e');
+        }
+      }
+      
+      relationshipContext = "\n\nRelationship context:\n$anniversaryText$notesText";
+    }
+
     final prompt = """
 You are Tango, an ai companion specialized in relationships.
 You are talking to a user and their partner. 
@@ -454,7 +551,9 @@ They work as $_userOccupation and studied $_userEducation.
 They have these interests: $interestsText
 They have these personality traits: $personalityText.
 $partnerProfileText
+$relationshipContext
 For context, here are the previous conversations: $previousConversationsText
+Ensure usage of UTF-8 encoding and not use special characters.
 Tango: """;
 
     debugPrint('ChatScreen: System prompt built, length: ${prompt.length} characters');
@@ -474,8 +573,15 @@ Tango: """;
     }
 
     setState(() => _isLoading = true);
-    debugPrint('ChatScreen: Generating AI greeting');
+    
     try {
+      // Refresh relationship data before generating the greeting
+      if (_relationshipId != null) {
+        debugPrint('ChatScreen: Refreshing relationship data for greeting');
+        await _fetchRelationshipData();
+      }
+      
+      debugPrint('ChatScreen: Generating AI greeting');
       final greeting = await _callOpenAI(
         systemContent: _buildSystemPrompt(),
         conversationHistory: _messages,
@@ -497,21 +603,15 @@ Tango: """;
       debugPrint('ChatScreen: Storing AI greeting in database');
       await _storeAiMessage(greeting);
     } catch (e) {
-      debugPrint("ChatScreen: Error greeting user: $e");
+      debugPrint('ChatScreen: Error generating greeting: $e');
       setState(() {
         _messages.add({
           'role': 'assistant',
-          'content': "An error occurred while greeting you: $e",
-        });
-        
-        // Scroll to bottom even if there's an error
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToBottom();
+          'content': "Hello there! I'm Tango, your relationship companion.",
         });
       });
     } finally {
       setState(() => _isLoading = false);
-      debugPrint('ChatScreen: _greetUser() completed');
     }
   }
 
@@ -520,18 +620,23 @@ Tango: """;
   Future<void> _sendMessage(String userMessage) async {
     debugPrint('ChatScreen: _sendMessage() called with message length: ${userMessage.length}');
     if (userMessage.trim().isEmpty) {
-      debugPrint('ChatScreen: Message is empty, ignoring');
+      debugPrint('ChatScreen: Empty message, not sending');
       return;
     }
-    if (_conversationId == null) {
-      debugPrint('ChatScreen: No conversation ID, ignoring message');
+    
+    // Don't allow sending messages while already processing
+    if (_isLoading) {
+      debugPrint('ChatScreen: Already sending a message, ignoring');
       return;
     }
-
+    
     setState(() {
       _messages.add({'role': 'user', 'content': userMessage});
       _isLoading = true;
     });
+    
+    // Clear the input field
+    _controller.clear();
     
     // Scroll to the bottom after adding user message
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -541,12 +646,13 @@ Tango: """;
     // Store the user message in the database
     debugPrint('ChatScreen: Storing user message in database');
     await _storeUserMessage(userMessage);
-
+    
     try {
       // Refresh messages for this relationship to get any context from partner conversations
       if (_relationshipId != null) {
-        debugPrint('ChatScreen: Refreshing relationship conversations before AI response');
+        debugPrint('ChatScreen: Refreshing relationship context before AI response');
         await _fetchConversationsForRelationship();
+        await _fetchRelationshipData();
       }
       
       debugPrint('ChatScreen: Generating AI response');
@@ -572,7 +678,7 @@ Tango: """;
       
       // Refresh messages again to include the latest AI response
       if (_relationshipId != null) {
-        debugPrint('ChatScreen: Refreshing relationship conversations after AI response');
+        debugPrint('ChatScreen: Refreshing relationship messages after AI response');
         await _fetchConversationsForRelationship();
       }
     } catch (e) {
@@ -712,6 +818,22 @@ Tango: """;
     } catch (e) {
       debugPrint("ChatScreen: Error calling chat API: $e");
       throw Exception("Error calling chat API: $e");
+    }
+  }
+
+  Future<void> _fetchRelationshipData() async {
+    debugPrint('ChatScreen: _fetchRelationshipData() called');
+    
+    try {
+      final data = await RelationshipService.fetchRelationshipData();
+      
+      setState(() {
+        _relationshipData = data;
+      });
+      
+      debugPrint('ChatScreen: Relationship data loaded');
+    } catch (e) {
+      debugPrint('ChatScreen: Error fetching relationship data: $e');
     }
   }
 

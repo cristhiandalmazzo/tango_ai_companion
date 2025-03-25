@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/screen_container.dart';
 import '../services/relationship_service.dart';
+import 'dart:convert';
 
 class RelationshipScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
@@ -210,6 +211,11 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
           
           const SizedBox(height: 30),
           
+          // Anniversary date
+          _buildAnniversarySection(),
+          
+          const SizedBox(height: 30),
+          
           // Relationship insights card
           Card(
             elevation: 4,
@@ -272,6 +278,11 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
               ),
             ),
           ),
+          
+          const SizedBox(height: 20),
+          
+          // Notes section
+          _buildNotesSection(),
           
           const SizedBox(height: 20),
           
@@ -470,6 +481,428 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
     );
   }
   
+  Widget _buildAnniversarySection() {
+    // Get anniversary date from relationship data
+    DateTime? anniversaryDate;
+    
+    if (_relationshipData['relationship']?['start_date'] != null) {
+      try {
+        anniversaryDate = DateTime.parse(_relationshipData['relationship']['start_date']);
+      } catch (e) {
+        // Handle date parsing error
+      }
+    }
+    
+    String formattedDate = 'Not set';
+    if (anniversaryDate != null) {
+      formattedDate = '${anniversaryDate.day}/${anniversaryDate.month}/${anniversaryDate.year}';
+    }
+    
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Anniversary Date',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () => _showDatePickerDialog(anniversaryDate),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              formattedDate,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            if (anniversaryDate != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _getAnniversaryMessage(anniversaryDate),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+  
+  String _getAnniversaryMessage(DateTime anniversaryDate) {
+    final now = DateTime.now();
+    final thisYearAnniversary = DateTime(now.year, anniversaryDate.month, anniversaryDate.day);
+    final daysUntilAnniversary = thisYearAnniversary.difference(now).inDays;
+    
+    if (daysUntilAnniversary == 0) {
+      return "Today is your anniversary! 🎉";
+    } else if (daysUntilAnniversary > 0) {
+      return "$daysUntilAnniversary days until your anniversary!";
+    } else {
+      // Anniversary has passed this year
+      final nextYearAnniversary = DateTime(now.year + 1, anniversaryDate.month, anniversaryDate.day);
+      final daysUntilNextAnniversary = nextYearAnniversary.difference(now).inDays;
+      return "$daysUntilNextAnniversary days until your next anniversary!";
+    }
+  }
+  
+  Future<void> _showDatePickerDialog(DateTime? initialDate) async {
+    final now = DateTime.now();
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate ?? now,
+      firstDate: DateTime(1900),
+      lastDate: now,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: isDarkMode
+                ? ColorScheme.dark(
+                    primary: Theme.of(context).colorScheme.primary,
+                    onPrimary: Theme.of(context).colorScheme.onPrimary,
+                    onSurface: Theme.of(context).colorScheme.onSurface,
+                    surface: Theme.of(context).colorScheme.surface,
+                  )
+                : ColorScheme.light(
+                    primary: Theme.of(context).colorScheme.primary,
+                    onPrimary: Theme.of(context).colorScheme.onPrimary,
+                    onSurface: Theme.of(context).colorScheme.onSurface,
+                  ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    
+    if (pickedDate != null) {
+      _saveAnniversaryDate(pickedDate);
+    }
+  }
+  
+  Future<void> _saveAnniversaryDate(DateTime date) async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+      
+      final result = await RelationshipService.updateRelationship({
+        'start_date': date.toIso8601String(),
+      });
+      
+      if (result) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Anniversary date updated!')),
+        );
+        
+        // Refresh relationship data
+        await _loadRelationshipData();
+      } else {
+        throw Exception('Failed to update anniversary date');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Widget _buildNotesSection() {
+    // Get notes from the additional_data column
+    List<Map<String, dynamic>> notes = [];
+    
+    if (_relationshipData['relationship']?['additional_data'] != null) {
+      try {
+        final additionalData = _relationshipData['relationship']['additional_data'];
+        if (additionalData['notes'] != null) {
+          notes = List<Map<String, dynamic>>.from(additionalData['notes']);
+        }
+      } catch (e) {
+        // Handle parsing error
+      }
+    }
+    
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.note_alt,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Relationship Notes',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: _showAddNoteDialog,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (notes.isEmpty)
+              Text(
+                'No notes yet. Tap the + button to add your first note.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
+              )
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: notes.length,
+                separatorBuilder: (context, index) => const Divider(),
+                itemBuilder: (context, index) {
+                  final note = notes[index];
+                  final dateAdded = DateTime.tryParse(note['date'] ?? '');
+                  final formattedDate = dateAdded != null
+                      ? '${dateAdded.day}/${dateAdded.month}/${dateAdded.year}'
+                      : '';
+                      
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              note['title'] ?? 'Note',
+                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, size: 18),
+                              onPressed: () => _deleteNote(index),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(note['content'] ?? ''),
+                        const SizedBox(height: 4),
+                        if (formattedDate.isNotEmpty)
+                          Text(
+                            'Added on $formattedDate',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Future<void> _showAddNoteDialog() async {
+    final titleController = TextEditingController();
+    final contentController = TextEditingController();
+    
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add New Note'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(
+                labelText: 'Title',
+                hintText: 'Enter a title for your note',
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: contentController,
+              decoration: const InputDecoration(
+                labelText: 'Content',
+                hintText: 'Write your note here',
+              ),
+              maxLines: 5,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (contentController.text.trim().isNotEmpty) {
+                Navigator.pop(context);
+                _saveNote(
+                  titleController.text.trim().isEmpty 
+                      ? 'Note' 
+                      : titleController.text.trim(),
+                  contentController.text.trim(),
+                );
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Future<void> _saveNote(String title, String content) async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+      
+      // Get current additional_data or create new
+      Map<String, dynamic> additionalData = {};
+      if (_relationshipData['relationship']?['additional_data'] != null) {
+        additionalData = Map<String, dynamic>.from(_relationshipData['relationship']['additional_data']);
+      }
+      
+      // Get existing notes or create new list
+      List<Map<String, dynamic>> notes = [];
+      if (additionalData['notes'] != null) {
+        notes = List<Map<String, dynamic>>.from(additionalData['notes']);
+      }
+      
+      // Add new note
+      notes.add({
+        'title': title,
+        'content': content,
+        'date': DateTime.now().toIso8601String(),
+      });
+      
+      // Update additional_data
+      additionalData['notes'] = notes;
+      
+      // Save to database
+      final result = await RelationshipService.updateRelationship({
+        'additional_data': additionalData,
+      });
+      
+      if (result) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Note added successfully!')),
+        );
+        
+        // Refresh relationship data
+        await _loadRelationshipData();
+      } else {
+        throw Exception('Failed to add note');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+  
+  Future<void> _deleteNote(int index) async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+      
+      // Get current additional_data
+      Map<String, dynamic> additionalData = Map<String, dynamic>.from(
+        _relationshipData['relationship']['additional_data'] ?? {}
+      );
+      
+      // Get existing notes
+      List<Map<String, dynamic>> notes = [];
+      if (additionalData['notes'] != null) {
+        notes = List<Map<String, dynamic>>.from(additionalData['notes']);
+        
+        // Remove note
+        if (index >= 0 && index < notes.length) {
+          notes.removeAt(index);
+          
+          // Update additional_data
+          additionalData['notes'] = notes;
+          
+          // Save to database
+          final result = await RelationshipService.updateRelationship({
+            'additional_data': additionalData,
+          });
+          
+          if (result) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Note deleted successfully!')),
+            );
+            
+            // Refresh relationship data
+            await _loadRelationshipData();
+          } else {
+            throw Exception('Failed to delete note');
+          }
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   Widget _buildCommonInterestsSection() {
     final commonInterests = _getCommonInterests();
     
