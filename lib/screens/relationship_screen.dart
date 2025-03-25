@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/screen_container.dart';
 import '../widgets/app_container.dart';
 import '../services/relationship_service.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kReleaseMode;
+import 'package:intl/intl.dart';
+import '../providers/auth_provider.dart';
+import '../providers/relationship_provider.dart';
+import '../models/relationship.dart';
+import '../models/note.dart';
+import '../widgets/loading_indicator.dart';
+import '../widgets/user_avatar.dart';
+import './chat_screen.dart'; // Update to direct import
 
 class RelationshipScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
@@ -79,8 +88,10 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return ScreenContainer(
-      title: 'Your Relationship',
+      title: l10n.relationship,
       isLoading: _isLoading,
       currentThemeMode: widget.currentThemeMode,
       onThemeChanged: widget.onThemeChanged,
@@ -91,6 +102,8 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   }
 
   Widget _buildErrorView() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -104,7 +117,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              'Error',
+              l10n.error,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -118,7 +131,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _loadRelationshipData,
-              child: const Text('Try Again'),
+              child: Text(l10n.retry),
             ),
           ],
         ),
@@ -127,6 +140,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   }
 
   Widget _buildRelationshipView() {
+    final l10n = AppLocalizations.of(context)!;
     final size = MediaQuery.of(context).size;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
@@ -137,14 +151,14 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
           children: [
             const SizedBox(height: 20),
             Text(
-              'Your Connection',
+              l10n.relationship,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              _relationshipData['relationship']?['name'] ?? 'View and strengthen your relationship',
+              _relationshipData['relationship']?['name'] ?? l10n.viewAndStrengthen,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Theme.of(context).textTheme.bodySmall?.color,
               ),
@@ -213,7 +227,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
               ElevatedButton.icon(
                 onPressed: _showReInviteDialog,
                 icon: const Icon(Icons.person_add),
-                label: const Text('Re-invite Partner'),
+                label: Text(l10n.reInvitePartner),
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor: Theme.of(context).colorScheme.secondary,
@@ -253,7 +267,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Relationship Insights',
+                          l10n.relationshipInsights,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -262,20 +276,19 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      _metrics['insight'] ?? 
-                      'Your communication has been improving. Continue sharing your thoughts and feelings to strengthen your connection.',
+                      _metrics['insight'] ?? l10n.communicationImproving,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
-                          child: _buildInsightMetric('Communication', 
+                          child: _buildInsightMetric(l10n.communication, 
                             _metrics['communication'] ?? 70),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: _buildInsightMetric('Understanding', 
+                          child: _buildInsightMetric(l10n.understanding, 
                             _metrics['understanding'] ?? 65),
                         ),
                       ],
@@ -290,7 +303,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text('Strengthen With AI Chat'),
+                      child: Text(l10n.strengthenWithAiChat),
                     ),
                   ],
                 ),
@@ -313,6 +326,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   }
 
   Widget _buildPartnerCard(Map<String, dynamic> profile, bool isCurrentUser) {
+    final l10n = AppLocalizations.of(context)!;
     final String name = profile['full_name'] ?? profile['username'] ?? profile['name'] ?? 'Partner';
     
     // Calculate age from birthdate if available
@@ -357,7 +371,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                isCurrentUser ? 'You' : name,
+                isCurrentUser ? l10n.you : name,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -389,7 +403,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text(isCurrentUser ? 'View Profile' : 'View Profile'),
+                child: Text(l10n.viewProfile),
               ),
             ],
           ),
@@ -399,21 +413,22 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
   }
 
   Widget _buildStrengthMeter() {
+    final l10n = AppLocalizations.of(context)!;
     Color strengthColor;
     String strengthLabel;
     
     if (_strengthPercentage >= 80) {
       strengthColor = Colors.green;
-      strengthLabel = 'Excellent';
+      strengthLabel = l10n.excellent;
     } else if (_strengthPercentage >= 60) {
       strengthColor = Colors.green.shade300;
-      strengthLabel = 'Good';
+      strengthLabel = l10n.good;
     } else if (_strengthPercentage >= 40) {
       strengthColor = Colors.amber;
-      strengthLabel = 'Moderate';
+      strengthLabel = l10n.moderate;
     } else {
       strengthColor = Colors.red.shade300;
-      strengthLabel = 'Needs Work';
+      strengthLabel = l10n.needsWork;
     }
     
     return Column(
@@ -422,7 +437,7 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Relationship Strength',
+              l10n.relationshipStrength,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -451,11 +466,11 @@ class _RelationshipScreenState extends State<RelationshipScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Needs Work',
+              l10n.needsWork,
               style: Theme.of(context).textTheme.bodySmall,
             ),
             Text(
-              'Excellent',
+              l10n.excellent,
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],

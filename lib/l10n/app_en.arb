@@ -1,0 +1,463 @@
+{
+  "@@locale": "en",
+  "appTitle": "Tango AI Companion",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "welcome": "Welcome to Tango",
+  "@welcome": {
+    "description": "Welcome text displayed on the login and home screens"
+  },
+  "signInToContinue": "Sign in to continue",
+  "@signInToContinue": {
+    "description": "Text shown on login screen"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "Label for email field"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Label for password field"
+  },
+  "confirmPassword": "Confirm Password",
+  "@confirmPassword": {
+    "description": "Label for password confirmation field"
+  },
+  "login": "Login",
+  "@login": {
+    "description": "Login button text"
+  },
+  "register": "Register",
+  "@register": {
+    "description": "Register button text"
+  },
+  "forgotPassword": "Forgot Password?",
+  "@forgotPassword": {
+    "description": "Forgot password link text"
+  },
+  "dontHaveAccount": "Don't have an account? Register",
+  "@dontHaveAccount": {
+    "description": "Text for redirecting to registration"
+  },
+  "haveAccount": "Already have an account? Login",
+  "@haveAccount": {
+    "description": "Text for redirecting to login"
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile section title"
+  },
+  "chat": "Chat",
+  "@chat": {
+    "description": "Chat section title"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings section title"
+  },
+  "relationship": "Relationship",
+  "@relationship": {
+    "description": "Relationship section title"
+  },
+  "name": "Name",
+  "@name": {
+    "description": "Label for name field"
+  },
+  "bio": "Bio",
+  "@bio": {
+    "description": "Label for biography field"
+  },
+  "selectInterests": "Select Interests",
+  "@selectInterests": {
+    "description": "Label for interests selection"
+  },
+  "selectPersonalityTraits": "Select Personality Traits",
+  "@selectPersonalityTraits": {
+    "description": "Label for personality traits selection"
+  },
+  "gender": "Gender",
+  "@gender": {
+    "description": "Label for gender field"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Label for language selection"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Save button text"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  "theme": "Theme",
+  "@theme": {
+    "description": "Theme setting label"
+  },
+  "lightTheme": "Light",
+  "@lightTheme": {
+    "description": "Light theme option"
+  },
+  "darkTheme": "Dark",
+  "@darkTheme": {
+    "description": "Dark theme option"
+  },
+  "systemTheme": "System",
+  "@systemTheme": {
+    "description": "System default theme option"
+  },
+  "english": "English",
+  "@english": {
+    "description": "English language option"
+  },
+  "portuguese": "Português (Brasil)",
+  "@portuguese": {
+    "description": "Brazilian Portuguese language option"
+  },
+  "changeLanguage": "Change Language",
+  "@changeLanguage": {
+    "description": "Language change option"
+  },
+  "error": "Error",
+  "@error": {
+    "description": "Error text"
+  },
+  "tryAgain": "Try Again",
+  "@tryAgain": {
+    "description": "Try again button text"
+  },
+  "features": "Features",
+  "@features": {
+    "description": "Features section title"
+  },
+  "startChatting": "Start chatting",
+  "@startChatting": {
+    "description": "Start chatting button text"
+  },
+  "aiCompanion": "Your AI companion for better relationships",
+  "@aiCompanion": {
+    "description": "App description text"
+  },
+  "viewProfile": "View Profile",
+  "@viewProfile": {
+    "description": "View profile button text"
+  },
+  "editProfile": "Edit Profile",
+  "@editProfile": {
+    "description": "Edit profile button text"
+  },
+  "logout": "Logout",
+  "@logout": {
+    "description": "Logout button text"
+  },
+  "notifications": "Notifications",
+  "@notifications": {
+    "description": "Notifications section title"
+  },
+  "privacy": "Privacy",
+  "@privacy": {
+    "description": "Privacy section title"
+  },
+  "security": "Security",
+  "@security": {
+    "description": "Security section title"
+  },
+  "exitRelationship": "Exit Relationship",
+  "@exitRelationship": {
+    "description": "Exit relationship button text"
+  },
+  "helpCenter": "Help Center",
+  "@helpCenter": {
+    "description": "Help center section title"
+  },
+  "about": "About",
+  "@about": {
+    "description": "About section title"
+  },
+  "support": "Support",
+  "@support": {
+    "description": "Support section title"
+  },
+  "darkMode": "Dark Mode",
+  "@darkMode": {
+    "description": "Dark mode toggle text"
+  },
+  "chatDescription": "Chat with our AI about your relationship questions",
+  "@chatDescription": {
+    "description": "Description of chat feature"
+  },
+  "profileDescription": "Update your profile information",
+  "@profileDescription": {
+    "description": "Description of profile feature"
+  },
+  "joinPartnerRelationship": "Join your partner's relationship",
+  "@joinPartnerRelationship": {
+    "description": "Text shown when joining a partner's relationship"
+  },
+  "invitePartner": "Invite your partner",
+  "@invitePartner": {
+    "description": "Dialog title for inviting a partner"
+  },
+  "shareLink": "Share this link with your partner to join:",
+  "@shareLink": {
+    "description": "Instructions for sharing invite link"
+  },
+  "copyURL": "Copy URL",
+  "@copyURL": {
+    "description": "Button text for copying URL"
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Button text to close a dialog"
+  },
+  "linkCopied": "Invitation URL copied to clipboard.",
+  "@linkCopied": {
+    "description": "Message shown when link is copied"
+  },
+  "confirmExitRelationship": "Are you sure you want to exit this relationship? This action cannot be undone.",
+  "@confirmExitRelationship": {
+    "description": "Confirmation message for exiting relationship"
+  },
+  "enterFullName": "Enter your full name",
+  "@enterFullName": {
+    "description": "Placeholder for name input field"
+  },
+  "enterEmail": "Enter your email",
+  "@enterEmail": {
+    "description": "Placeholder for email input field"
+  },
+  "createPassword": "Create a password",
+  "@createPassword": {
+    "description": "Placeholder for password creation field"
+  },
+  "profileUpdated": "Profile updated successfully.",
+  "@profileUpdated": {
+    "description": "Message shown when profile is updated"
+  },
+  "failedToLoad": "Failed to load profile: ",
+  "@failedToLoad": {
+    "description": "Error message when profile fails to load"
+  },
+  "failedToUpdate": "Failed to update profile: ",
+  "@failedToUpdate": {
+    "description": "Error message when profile fails to update"
+  },
+  "startConversation": "Start your conversation",
+  "@startConversation": {
+    "description": "Prompt to start a conversation"
+  },
+  "mustBeLoggedIn": "You must be logged in to exit a relationship",
+  "@mustBeLoggedIn": {
+    "description": "Error message when user is not logged in"
+  },
+  "noActiveRelationship": "No active relationship found",
+  "@noActiveRelationship": {
+    "description": "Message when no active relationship exists"
+  },
+  "relationshipEnded": "Relationship ended successfully",
+  "@relationshipEnded": {
+    "description": "Message when relationship is ended"
+  },
+  "errorEndingRelationship": "Error ending relationship: ",
+  "@errorEndingRelationship": {
+    "description": "Error message when ending relationship fails"
+  },
+  "emailRegistered": "Email already registered.",
+  "@emailRegistered": {
+    "description": "Error message for registered email"
+  },
+  "viewAndStrengthen": "View and strengthen your relationship",
+  "@viewAndStrengthen": {
+    "description": "Text shown on relationship screen"
+  },
+  "reInvitePartner": "Re-invite Partner",
+  "@reInvitePartner": {
+    "description": "Button to re-invite partner"
+  },
+  "relationshipInsights": "Relationship Insights",
+  "@relationshipInsights": {
+    "description": "Title for relationship insights section"
+  },
+  "communicationImproving": "Your communication has been improving. Continue sharing your thoughts and feelings to strengthen your connection.",
+  "@communicationImproving": {
+    "description": "Default relationship insight message"
+  },
+  "communication": "Communication",
+  "@communication": {
+    "description": "Communication metric label"
+  },
+  "understanding": "Understanding",
+  "@understanding": {
+    "description": "Understanding metric label"
+  },
+  "strengthenWithAiChat": "Strengthen With AI Chat",
+  "@strengthenWithAiChat": {
+    "description": "Button to strengthen relationship with AI chat"
+  },
+  "relationshipStrength": "Relationship Strength",
+  "@relationshipStrength": {
+    "description": "Label for relationship strength meter"
+  },
+  "needsWork": "Needs Work",
+  "@needsWork": {
+    "description": "Label for low relationship strength"
+  },
+  "moderate": "Moderate",
+  "@moderate": {
+    "description": "Label for moderate relationship strength"
+  },
+  "good": "Good",
+  "@good": {
+    "description": "Label for good relationship strength"
+  },
+  "excellent": "Excellent",
+  "@excellent": {
+    "description": "Label for excellent relationship strength"
+  },
+  "you": "You",
+  "@you": {
+    "description": "Label for current user profile"
+  },
+  "years": "years",
+  "@years": {
+    "description": "Text for age display"
+  },
+  "noDescription": "No description for {person} has been added yet.",
+  "@noDescription": {
+    "description": "Text shown when no profile description exists",
+    "placeholders": {
+      "person": {
+        "type": "String",
+        "example": "you"
+      }
+    }
+  },
+  "viewProfile": "View Profile",
+  "@viewProfile": {
+    "description": "Button to view profile"
+  },
+  "anniversaryDate": "Anniversary Date",
+  "@anniversaryDate": {
+    "description": "Label for anniversary date"
+  },
+  "notSet": "Not set",
+  "@notSet": {
+    "description": "Text shown when date is not set"
+  },
+  "todayAnniversary": "Today is your anniversary! 🎉",
+  "@todayAnniversary": {
+    "description": "Message shown on anniversary day"
+  },
+  "daysUntilAnniversary": "{days} days until your anniversary!",
+  "@daysUntilAnniversary": {
+    "description": "Message showing days until anniversary",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "daysUntilNextAnniversary": "{days} days until your next anniversary!",
+  "@daysUntilNextAnniversary": {
+    "description": "Message showing days until next anniversary",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "300"
+      }
+    }
+  },
+  "anniversaryUpdated": "Anniversary date updated!",
+  "@anniversaryUpdated": {
+    "description": "Message shown when anniversary date is updated"
+  },
+  "relationshipNotes": "Relationship Notes",
+  "@relationshipNotes": {
+    "description": "Title for relationship notes section"
+  },
+  "noNotesYet": "No notes yet. Tap the + button to add your first note.",
+  "@noNotesYet": {
+    "description": "Text shown when no notes exist"
+  },
+  "note": "Note",
+  "@note": {
+    "description": "Default note title"
+  },
+  "addedOn": "Added on {date}",
+  "@addedOn": {
+    "description": "Text showing when note was added",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "12/31/2023"
+      }
+    }
+  },
+  "addNewNote": "Add New Note",
+  "@addNewNote": {
+    "description": "Title for add note dialog"
+  },
+  "title": "Title",
+  "@title": {
+    "description": "Label for title field"
+  },
+  "titleHint": "Enter a title for your note",
+  "@titleHint": {
+    "description": "Hint for title field"
+  },
+  "content": "Content",
+  "@content": {
+    "description": "Label for content field"
+  },
+  "contentHint": "Write your note here",
+  "@contentHint": {
+    "description": "Hint for content field"
+  },
+  "noteAdded": "Note added successfully!",
+  "@noteAdded": {
+    "description": "Message shown when note is added"
+  },
+  "noteDeleted": "Note deleted successfully!",
+  "@noteDeleted": {
+    "description": "Message shown when note is deleted"
+  },
+  "commonInterests": "Common Interests",
+  "@commonInterests": {
+    "description": "Title for common interests section"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Retry button text"
+  },
+  "relationshipIdNotFound": "Relationship ID not found.",
+  "@relationshipIdNotFound": {
+    "description": "Error message when relationship ID is not found"
+  },
+  "inviteYourPartner": "Invite Your Partner",
+  "@inviteYourPartner": {
+    "description": "Title for invite partner dialog"
+  },
+  "partnerNotSignedUp": "Your partner hasn't signed up yet. Share this link with them to join:",
+  "@partnerNotSignedUp": {
+    "description": "Message in invite partner dialog"
+  },
+  "inviteCopied": "Invitation URL copied to clipboard.",
+  "@inviteCopied": {
+    "description": "Message shown when invitation URL is copied"
+  },
+  "copyUrl": "Copy URL",
+  "@copyUrl": {
+    "description": "Button to copy URL"
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Close button text"
+  },
+  "error": "Error",
+  "@error": {
+    "description": "Error text label"
+  }
+} 

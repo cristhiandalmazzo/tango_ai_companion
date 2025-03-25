@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/screen_container.dart';
 import '../services/relationship_service.dart';
 import '../widgets/app_container.dart';
+import '../providers/language_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   final ThemeMode currentThemeMode;
@@ -22,10 +25,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = false;
 
   Future<void> _exitRelationship() async {
+    final l10n = AppLocalizations.of(context)!;
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You must be logged in to exit a relationship')),
+        SnackBar(content: Text(l10n.mustBeLoggedIn)),
       );
       return;
     }
@@ -37,7 +41,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final relationshipData = await RelationshipService.fetchRelationshipData();
       if (relationshipData == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No active relationship found')),
+          SnackBar(content: Text(l10n.noActiveRelationship)),
         );
         return;
       }
@@ -45,7 +49,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final relationship = relationshipData['relationship'];
       if (relationship == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No active relationship found')),
+          SnackBar(content: Text(l10n.noActiveRelationship)),
         );
         return;
       }
@@ -81,7 +85,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Relationship ended successfully')),
+          SnackBar(content: Text(l10n.relationshipEnded)),
         );
         // Navigate back to home screen
         Navigator.pushReplacementNamed(context, '/home');
@@ -90,7 +94,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error ending relationship: ${e.toString()}'),
+            content: Text(l10n.errorEndingRelationship + e.toString()),
             backgroundColor: Colors.red,
           ),
         );
@@ -103,18 +107,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _showExitRelationshipDialog() async {
+    final l10n = AppLocalizations.of(context)!;
     return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Exit Relationship'),
-          content: const Text(
-            'Are you sure you want to exit this relationship? This action cannot be undone.',
+          title: Text(l10n.exitRelationship),
+          content: Text(
+            l10n.confirmExitRelationship,
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () {
@@ -124,7 +129,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextButton.styleFrom(
                 foregroundColor: Colors.red,
               ),
-              child: const Text('Exit Relationship'),
+              child: Text(l10n.exitRelationship),
             ),
           ],
         );
@@ -134,8 +139,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return ScreenContainer(
-      title: 'Settings',
+      title: l10n.settings,
       currentThemeMode: widget.currentThemeMode,
       onThemeChanged: widget.onThemeChanged,
       body: SingleChildScrollView(
@@ -143,65 +150,66 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSection('Appearance', [
+              _buildSection(l10n.theme, [
                 _buildThemeToggle(context),
                 _buildDivider(),
+                _buildLanguageSelector(context),
               ]),
-              _buildSection('Account', [
+              _buildSection(l10n.profile, [
                 _buildListTile(
                   context,
                   icon: Icons.person_outline,
-                  title: 'Profile Settings',
+                  title: l10n.profile,
                   onTap: () => Navigator.pushNamed(context, '/profile'),
                 ),
                 _buildDivider(),
                 _buildListTile(
                   context,
                   icon: Icons.notifications_outlined,
-                  title: 'Notifications',
+                  title: l10n.notifications,
                   onTap: () {},
                 ),
                 _buildDivider(),
                 _buildListTile(
                   context,
                   icon: Icons.privacy_tip_outlined,
-                  title: 'Privacy',
+                  title: l10n.privacy,
                   onTap: () {},
                 ),
                 _buildDivider(),
                 _buildListTile(
                   context,
                   icon: Icons.security_outlined,
-                  title: 'Security',
+                  title: l10n.security,
                   onTap: () {},
                 ),
                 _buildDivider(),
                 _buildListTile(
                   context,
                   icon: Icons.heart_broken,
-                  title: 'Exit Relationship',
+                  title: l10n.exitRelationship,
                   onTap: _showExitRelationshipDialog,
                 ),
               ]),
-              _buildSection('Support', [
+              _buildSection(l10n.support, [
                 _buildListTile(
                   context,
                   icon: Icons.help_outline,
-                  title: 'Help Center',
+                  title: l10n.helpCenter,
                   onTap: () {},
                 ),
                 _buildDivider(),
                 _buildListTile(
                   context,
                   icon: Icons.info_outline,
-                  title: 'About',
+                  title: l10n.about,
                   onTap: () {},
                 ),
                 _buildDivider(),
                 _buildListTile(
                   context,
                   icon: Icons.logout,
-                  title: 'Logout',
+                  title: l10n.logout,
                   onTap: () {
                     // Handle logout
                   },
@@ -215,9 +223,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildThemeToggle(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       leading: const Icon(Icons.dark_mode),
-      title: const Text('Dark Mode'),
+      title: Text(l10n.darkMode),
       trailing: Switch(
         value: widget.currentThemeMode == ThemeMode.dark,
         onChanged: (value) {
@@ -262,6 +271,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         ...items,
       ],
+    );
+  }
+
+  Widget _buildLanguageSelector(BuildContext context) {
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    final l10n = AppLocalizations.of(context)!;
+    
+    return ListTile(
+      leading: const Icon(Icons.language),
+      title: Text(l10n.language),
+      trailing: DropdownButton<Locale>(
+        value: languageProvider.locale,
+        underline: const SizedBox(),
+        onChanged: (Locale? newLocale) {
+          if (newLocale != null) {
+            languageProvider.setLocale(newLocale);
+          }
+        },
+        items: const [
+          DropdownMenuItem(
+            value: Locale('en'),
+            child: Text('English'),
+          ),
+          DropdownMenuItem(
+            value: Locale('pt', 'BR'),
+            child: Text('Português (Brasil)'),
+          ),
+        ],
+      ),
     );
   }
 } 

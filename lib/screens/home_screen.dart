@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/screen_container.dart';
 import '../widgets/app_container.dart';
 
@@ -14,8 +15,10 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return ScreenContainer(
-      title: 'Tango Home',
+      title: l10n.appTitle,
       currentThemeMode: currentThemeMode,
       onThemeChanged: onThemeChanged,
       body: SingleChildScrollView(
@@ -34,6 +37,8 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildWelcomeCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -58,18 +63,18 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Welcome to Tango',
-            style: TextStyle(
+          Text(
+            l10n.welcome,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Your AI companion for better relationships',
-            style: TextStyle(
+          Text(
+            l10n.aiCompanion,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
             ),
@@ -88,12 +93,12 @@ class HomeScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.chat_bubble_outline),
-                SizedBox(width: 8),
-                Text('Start chatting'),
+                const Icon(Icons.chat_bubble_outline),
+                const SizedBox(width: 8),
+                Text(l10n.chat),
               ],
             ),
           ),
@@ -103,17 +108,19 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildFeatureSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     final features = [
       {
         'icon': Icons.chat_bubble_outline,
-        'title': 'AI Chat',
-        'description': 'Chat with our AI about your relationship questions',
+        'title': l10n.chat,
+        'description': l10n.chatDescription,
         'route': '/ai_chat',
       },
       {
         'icon': Icons.person_outline,
-        'title': 'Profile',
-        'description': 'Update your profile information',
+        'title': l10n.profile,
+        'description': l10n.profileDescription,
         'route': '/profile',
       },
     ];
@@ -121,9 +128,9 @@ class HomeScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Features',
-          style: TextStyle(
+        Text(
+          l10n.features,
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'home_screen.dart';
 import 'package:uuid/uuid.dart';
 import '../widgets/custom_text_field.dart';
@@ -140,15 +141,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
         final String inviteUrl = "${kReleaseMode ? 'https://cristhiandalmazzo.github.io/tango_ai_companion' : 'http://localhost:49879'}/signup?relationshipId=$relationshipId";
         
         // Show the invite URL dialog with a "Copy URL" button and a "Close" button.
+        final l10n = AppLocalizations.of(context)!;
         await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text("Invite your partner"),
+            title: Text(l10n.invitePartner),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Share this link with your partner to join:"),
+                Text(l10n.shareLink),
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -171,14 +173,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: inviteUrl));
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Invitation URL copied to clipboard.")),
+                    SnackBar(content: Text(l10n.linkCopied)),
                   );
                 },
-                child: const Text("Copy URL"),
+                child: Text(l10n.copyURL),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text("Close"),
+                child: Text(l10n.close),
               )
             ],
           ),
@@ -200,9 +202,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         print("AuthException: ${e.message}");
       }
       // Show a simple snackbar for email already registered.
+      final l10n = AppLocalizations.of(context)!;
       if (e.message.toLowerCase().contains("user already registered")) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Email already registered.")),
+          SnackBar(content: Text(l10n.emailRegistered)),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -243,6 +246,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Widget _buildHeader() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Column(
       children: [
         Container(
@@ -259,9 +264,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        const Text(
-          'Create an Account',
-          style: TextStyle(
+        Text(
+          l10n.register,
+          style: const TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
@@ -270,8 +275,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
         const SizedBox(height: 8),
         Text(
           relationshipIdFromUrl != null 
-              ? 'Join your partner\'s relationship'
-              : 'Get started with Tango',
+              ? l10n.joinPartnerRelationship
+              : l10n.welcome,
           style: TextStyle(
             fontSize: 16,
             color: Colors.grey.shade600,
@@ -283,34 +288,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Widget _buildRegisterForm() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         CustomTextField(
           controller: _nameController,
-          label: 'Full Name',
-          hintText: 'Enter your full name',
+          label: l10n.name,
+          hintText: l10n.enterFullName,
           prefixIcon: const Icon(Icons.person_outline),
         ),
         const SizedBox(height: 16),
         CustomTextField(
           controller: _emailController,
-          label: 'Email',
-          hintText: 'Enter your email',
+          label: l10n.email,
+          hintText: l10n.enterEmail,
           keyboardType: TextInputType.emailAddress,
           prefixIcon: const Icon(Icons.email_outlined),
         ),
         const SizedBox(height: 16),
         CustomTextField(
           controller: _passwordController,
-          label: 'Password',
-          hintText: 'Create a password',
+          label: l10n.password,
+          hintText: l10n.createPassword,
           obscureText: true,
           prefixIcon: const Icon(Icons.lock_outline),
         ),
         const SizedBox(height: 32),
         CustomButton(
-          text: 'Sign Up',
+          text: l10n.register,
           onPressed: _signUp,
           isLoading: _isLoading,
           icon: Icons.arrow_forward,
@@ -320,13 +327,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              "Already have an account?",
+              l10n.haveAccount,
               style: TextStyle(color: Colors.grey.shade700),
             ),
             TextButton(
               onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
               child: Text(
-                "Log in",
+                l10n.login,
                 style: TextStyle(
                   color: Theme.of(context).primaryColor,
                   fontWeight: FontWeight.bold,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/screen_container.dart';
 import '../widgets/profile_form.dart';
 import '../widgets/app_container.dart';
@@ -37,8 +38,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _isLoading = false;
       });
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to load profile: ${e.toString()}")),
+        SnackBar(content: Text(l10n.failedToLoad + e.toString())),
       );
     }
   }
@@ -51,8 +53,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final result = await ProfileService.updateProfile(updates);
       if (result != null) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profile updated successfully.")),
+          SnackBar(content: Text(l10n.profileUpdated)),
         );
         setState(() {
           _profileData = result;
@@ -65,8 +68,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _isLoading = false;
       });
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to update profile: ${e.toString()}")),
+        SnackBar(content: Text(l10n.failedToUpdate + e.toString())),
       );
     }
   }
@@ -79,8 +83,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return ScreenContainer(
-      title: 'Edit Profile',
+      title: l10n.profile,
       isLoading: false, // We'll handle loading states within the form
       currentThemeMode: widget.currentThemeMode,
       onThemeChanged: widget.onThemeChanged,
@@ -98,7 +104,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Navigator.pushReplacementNamed(context, '/profile');
                   },
                   icon: const Icon(Icons.visibility),
-                  label: const Text('View Profile'),
+                  label: Text(l10n.profile),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     shape: RoundedRectangleBorder(

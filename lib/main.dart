@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:relationship_mediator/screens/chat_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/home_screen.dart';
@@ -14,6 +17,7 @@ import 'screens/settings_screen.dart';
 import 'supabase_config.dart';
 import 'services/theme_service.dart';
 import 'services/text_processing_service.dart';
+import 'providers/language_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +32,12 @@ Future<void> main() async {
     print("Supabase initialized successfully.");
   }
 
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => LanguageProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -62,9 +71,25 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Tango AI Companion',
+      
+      // Localization support
+      locale: languageProvider.locale,
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'), // English
+        Locale('pt', 'BR'), // Brazilian Portuguese
+      ],
+      
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,

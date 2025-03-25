@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/app_container.dart';
@@ -62,6 +63,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildHeader() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Column(
       children: [
         Container(
@@ -78,9 +81,9 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        const Text(
-          'Welcome to Tango',
-          style: TextStyle(
+        Text(
+          l10n.welcome,
+          style: const TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
@@ -88,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Sign in to continue',
+          l10n.signInToContinue,
           style: TextStyle(
             fontSize: 16,
             color: Colors.grey.shade600,
@@ -100,12 +103,14 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildLoginForm() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         CustomTextField(
           controller: _emailController,
-          label: 'Email',
+          label: l10n.email,
           hintText: 'Enter your email',
           keyboardType: TextInputType.emailAddress,
           prefixIcon: const Icon(Icons.email_outlined),
@@ -113,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 16),
         CustomTextField(
           controller: _passwordController,
-          label: 'Password',
+          label: l10n.password,
           hintText: 'Enter your password',
           obscureText: true,
           prefixIcon: const Icon(Icons.lock_outline),
@@ -123,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: TextButton(
             onPressed: () {},
             child: Text(
-              'Forgot Password?',
+              l10n.forgotPassword,
               style: TextStyle(
                 color: Theme.of(context).primaryColor,
               ),
@@ -132,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 24),
         CustomButton(
-          text: 'Sign In',
+          text: l10n.login,
           onPressed: _signIn,
           isLoading: _isLoading,
           icon: Icons.login,
@@ -142,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              "Don't have an account?",
+              l10n.dontHaveAccount,
               style: TextStyle(color: Colors.grey.shade700),
             ),
             TextButton(
@@ -150,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Navigator.pushReplacementNamed(context, '/signup');
               },
               child: Text(
-                "Sign Up",
+                l10n.register,
                 style: TextStyle(
                   color: Theme.of(context).primaryColor,
                   fontWeight: FontWeight.bold,
