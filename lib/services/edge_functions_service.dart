@@ -68,6 +68,7 @@ class EdgeFunctionsService {
     required String userPrompt,
     String model = defaultModel,
   }) async {
+    // Use the baseUrl to ensure we're calling the edge function, not OpenAI directly
     final url = Uri.parse('$_baseUrl/chat-api');
     
     debugPrint('EdgeFunctionsService: callChatApiWithContext() called');
@@ -77,16 +78,11 @@ class EdgeFunctionsService {
     debugPrint('EdgeFunctionsService: User prompt length: ${userPrompt.length} characters');
     
     // Build the complete message that includes system content and conversation history
-    final completePrompt = '''
-$systemContent
-
-Previous conversation:
-${conversationHistory.map((m) => "${m['role']}: ${m['content']}").join('\n')}
-
-User: $userPrompt
-''';
-
-    debugPrint('EdgeFunctionsService: Complete prompt length: ${completePrompt.length} characters');
+    final messages = [
+      {'role': 'system', 'content': systemContent},
+      ...conversationHistory,
+      {'role': 'user', 'content': userPrompt},
+    ];
     
     try {
       debugPrint('EdgeFunctionsService: Sending request to $url');
@@ -98,7 +94,7 @@ User: $userPrompt
           'Authorization': 'Bearer $supabaseAnonKey',
         },
         body: jsonEncode({
-          'userMessage': completePrompt,
+          'messages': messages,
           'model': model,
         }),
       );

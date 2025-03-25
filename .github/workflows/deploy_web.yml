@@ -11,17 +11,23 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: false  # Disable cache to ensure fresh build
 
       - name: Install Dependencies
-        run: flutter pub get
+        run: flutter pub get --no-cache
+
+      - name: Clean before build
+        run: flutter clean
 
       - name: Build for Web
-        run: flutter build web
+        run: flutter build web --delete-conflicting-outputs --web-renderer canvaskit
 
       - name: Hardcode base href for GitHub Pages
         run: |
@@ -37,3 +43,4 @@ jobs:
           github_token: ${{ secrets.MY_GITHUB_PAT }}
           publish_dir: build/web
           publish_branch: gh-pages
+          force_orphan: true  # Create a new history for the gh-pages branch, deleting previous history
