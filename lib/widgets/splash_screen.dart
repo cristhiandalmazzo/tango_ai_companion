@@ -103,12 +103,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Colors.white.withOpacity(0.8),
-              ),
-            ),
           ],
         ),
       ),
