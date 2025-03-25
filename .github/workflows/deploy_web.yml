@@ -21,7 +21,7 @@ jobs:
           cache: false  # Disable cache to ensure fresh build
 
       - name: Install Dependencies
-        run: flutter pub get --no-cache
+        run: flutter pub get
 
       - name: Clean before build
         run: flutter clean
